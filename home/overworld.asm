@@ -41,7 +41,7 @@ EnterMap::
 	ld [wJoyIgnore], a
 
 OverworldLoop::
-	call DelayFrame
+;	call DelayFrame
 OverworldLoopLessDelay::
 	call DelayFrame
 	call IsSurfingPikachuInParty
@@ -337,9 +337,13 @@ NewBattle::
 
 ; function to make bikes twice as fast as walking
 DoBikeSpeedup::
+	ldh a, [hJoyHeld]
+	and B_BUTTON
+	jr nz, .runOrBike
 	ld a, [wWalkBikeSurfState]
 	dec a ; riding a bike?
 	ret nz
+.runOrBike
 	ld a, [wd736]
 	bit 6, a
 	ret nz
