@@ -191,6 +191,8 @@ StatusScreen:
 .continue
 	call WaitForTextScrollButtonPress ; wait for button
 	ld d, $0
+	ld a, [wc5d8]                     ; seems to disrupt some tiles when
+	push af                           ; viewing from a box, so let's store
 	call PrintStatsBoxDVs
 	call Delay3
 	call WaitForTextScrollButtonPress ; wait for button
@@ -198,6 +200,8 @@ StatusScreen:
 	call PrintStatsBoxEXP
 	call Delay3
 	call WaitForTextScrollButtonPress ; wait for button
+	pop af                            ;
+	ld [wc5d8], a                     ; and restore
 	pop af
 	ldh [hTileAnimations], a
 	ret
@@ -338,6 +342,16 @@ PrintStatsBoxDVs:
 	call PlaceString
 	pop hl
 	pop bc
+	push bc
+	push hl
+	ld bc, $14
+	add hl, bc
+	pop bc
+	push bc
+	ld de, StatsTextDVs
+	call PlaceString
+	pop hl
+	pop bc
 	add hl, bc
     ld a, [wLoadedMonDVs]       ; I.   read first byte
     swap a                      ;      swap nibbles 
@@ -396,6 +410,16 @@ PrintStatsBoxEXP:
 	call PlaceString
 	pop hl
 	pop bc
+	push bc
+	push hl
+	ld bc, $14
+	add hl, bc
+	pop bc
+	push bc
+	ld de, StatsTextEXP
+	call PlaceString
+	pop hl
+	pop bc
 	add hl, bc
 	ld de, wLoadedMonAttackExp
 	lb bc, 2, 5
@@ -421,6 +445,18 @@ StatsText:
 	next "DEFENSE"
 	next "SPEED"
 	next "SPECIAL@"
+
+StatsTextDVs:
+	db   "dv"
+	next "dv"
+	next "dv"
+	next "dv@"
+
+StatsTextEXP:
+	db   "xp"
+	next "xp"
+	next "xp"
+	next "xp@"
 
 StatusScreen2:
 	ldh a, [hTileAnimations]
