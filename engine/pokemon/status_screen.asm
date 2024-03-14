@@ -190,6 +190,10 @@ StatusScreen:
 	call PlayCry ; play Pokémon cry
 .continue
 	call WaitForTextScrollButtonPress ; wait for button
+	ld d, $0
+	call PrintStatsBoxDVs
+	call Delay3
+	call WaitForTextScrollButtonPress ; wait for button
 	pop af
 	ldh [hTileAnimations], a
 	ret
@@ -303,6 +307,66 @@ PrintStat:
 	ld de, SCREEN_WIDTH * 2
 	add hl, de
 	ret
+
+; --------------------------------
+; Print DVs
+
+PrintStatsBoxDVs:
+	ld a, d
+	and a ; a is 0 from the status screen
+	jr nz, .DifferentBoxDVs
+	hlcoord 0, 8
+	lb bc, 8, 8
+	call TextBoxBorder ; Draws the box
+	hlcoord 1, 9 ; Start printing stats from here
+	ld bc, $19 ; Number offset
+	jr .PrintStatsDVs
+.DifferentBoxDVs
+	hlcoord 9, 2
+	lb bc, 8, 9
+	call TextBoxBorder
+	hlcoord 11, 3
+	ld bc, $18
+.PrintStatsDVs
+	push bc
+	push hl
+	ld de, StatsText
+	call PlaceString
+	pop hl
+	pop bc
+	add hl, bc
+    ld a, [wLoadedMonDVs]       ; I.   read first byte
+    swap a                      ;      swap nibbles 
+    and 15                      ;      & mask to keep ATK DV
+    ld [wc5d8], a               ;      store in memory (unused? ; maybe push/pop)
+    ld de, wc5d8                ;      load in de for PrintNumber
+    lb bc, 1, 3                 ;      1 byte, 3 digits
+	call PrintStatDVs           ;
+	ld a, [wLoadedMonDVs]       ; II.  read first byte again
+    and 15                      ;      mask to keep DEF DV
+    ld [wc5d8], a               ;      store in memory (unused? ; maybe push/pop)
+    ld de, wc5d8                ;      load in de for PrintNumber
+	call PrintStatDVs           ;
+	ld a, [wLoadedMonDVs + 1]   ; III. read second byte
+    swap a                      ;      swap nibbles 
+    and 15                      ;      & mask to keep SPD DV
+    ld [wc5d8], a               ;      store in memory (unused? ; maybe push/pop)
+    ld de, wc5d8                ;      load in de for PrintNumber
+	call PrintStatDVs           ;
+	ld a, [wLoadedMonDVs + 1]   ; IV.  read second byte
+    and 15                      ;      mask to keep SPC DV
+    ld [wc5d8], a               ;      store in memory (unused? ; maybe push/pop)
+    ld de, wc5d8                ;      load in de for PrintNumber
+	jp PrintNumber
+PrintStatDVs:
+	push hl
+	call PrintNumber
+	pop hl
+	ld de, SCREEN_WIDTH * 2
+	add hl, de
+	ret
+
+; --------------------------------
 
 StatsText:
 	db   "ATTACK"
