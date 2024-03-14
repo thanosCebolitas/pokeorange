@@ -15,7 +15,8 @@ PrintLetterDelay::
 	bit 0, a
 	jr z, .waitOneFrame
 	ld a, [wOptions]
-	and $f
+	and $f                               ; test text speed
+	jr z, .done                          ; on fastest setting return
 	ldh [hFrameCounter], a
 	jr .checkButtons
 .waitOneFrame

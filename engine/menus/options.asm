@@ -99,21 +99,21 @@ SlowText:
 GetTextSpeed:
 	ld a, [wOptions]
 	and $f
-	cp $5
+	cp $3
 	jr z, .slowTextOption
-	cp $1
+	cp $0
 	jr z, .fastTextOption
 ; mid text option
 	ld c, $1
-	lb de, 1, 5
+	lb de, 0, 3
 	ret
 .slowTextOption
 	ld c, $2
-	lb de, 3, 1
+	lb de, 1, 0
 	ret
 .fastTextOption
 	ld c, $0
-	lb de, 5, 3
+	lb de, 3, 1
 	ret
 
 OptionsMenu_BattleAnimations:
