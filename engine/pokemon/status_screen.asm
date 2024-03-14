@@ -194,6 +194,10 @@ StatusScreen:
 	call PrintStatsBoxDVs
 	call Delay3
 	call WaitForTextScrollButtonPress ; wait for button
+	ld d, $0
+	call PrintStatsBoxEXP
+	call Delay3
+	call WaitForTextScrollButtonPress ; wait for button
 	pop af
 	ldh [hTileAnimations], a
 	ret
@@ -359,6 +363,50 @@ PrintStatsBoxDVs:
     ld de, wc5d8                ;      load in de for PrintNumber
 	jp PrintNumber
 PrintStatDVs:
+	push hl
+	call PrintNumber
+	pop hl
+	ld de, SCREEN_WIDTH * 2
+	add hl, de
+	ret
+
+; --------------------------------
+; Print Stat EXP
+
+PrintStatsBoxEXP:
+	ld a, d
+	and a ; a is 0 from the status screen
+	jr nz, .DifferentBoxEXP
+	hlcoord 0, 8
+	lb bc, 8, 8
+	call TextBoxBorder ; Draws the box
+	hlcoord 1, 9 ; Start printing stats from here
+	ld bc, $17 ; Number offset
+	jr .PrintStatsEXP
+.DifferentBoxEXP
+	hlcoord 9, 2
+	lb bc, 8, 9
+	call TextBoxBorder
+	hlcoord 11, 3
+	ld bc, $16
+.PrintStatsEXP
+	push bc
+	push hl
+	ld de, StatsText
+	call PlaceString
+	pop hl
+	pop bc
+	add hl, bc
+	ld de, wLoadedMonAttackExp
+	lb bc, 2, 5
+	call PrintStat
+	ld de, wLoadedMonDefenseExp
+	call PrintStat
+	ld de, wLoadedMonSpeedExp
+	call PrintStat
+	ld de, wLoadedMonSpecialExp
+	jp PrintNumber
+PrintStatEXP:
 	push hl
 	call PrintNumber
 	pop hl
