@@ -1320,8 +1320,15 @@ SlideTrainerPicOffScreen:
 	add hl, de
 	dec b
 	jr nz, .rowLoop
+    ld a, [wOptions]
+    bit BIT_GAME_SPEED, a
+    jr z, .fasterStepLoop
 	ld c, 2
 	call DelayFrames
+	jr .stepLoopDone
+.fasterStepLoop
+	call DelayFrame
+.stepLoopDone
 	pop hl
 	pop bc
 	dec c
