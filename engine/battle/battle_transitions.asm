@@ -378,12 +378,22 @@ BattleTransition_Shrink:
 	call BattleTransition_CopyTiles2
 	ld a, $1
 	ldh [hAutoBGTransferEnabled], a
+	ld a, [wOptions]
+	bit BIT_GAME_SPEED, a
+	jr z, .lessDelay
 	ld c, 6
+	jp .shrinkDelay
+.lessDelay
+	ld c, 2
+.shrinkDelay
 	call DelayFrames
 	pop bc
 	dec c
 	jr nz, .loop
 	call BattleTransition_BlackScreen
+	ld a, [wOptions]
+	bit BIT_GAME_SPEED, a
+	ret z
 	ld c, 10
 	jp DelayFrames
 
@@ -411,11 +421,21 @@ BattleTransition_Split:
 	ld bc, 2
 	call BattleTransition_CopyTiles2
 	call BattleTransition_TransferDelay3
+	ld a, [wOptions]
+	bit BIT_GAME_SPEED, a
+	jr z, .splitLessDelay
 	call Delay3
+	jp .splitDelayDone
+.splitLessDelay
+	call DelayFrame
+.splitDelayDone
 	pop bc
 	dec c
 	jr nz, .loop
 	call BattleTransition_BlackScreen
+	ld a, [wOptions]
+	bit BIT_GAME_SPEED, a
+	ret z
 	ld c, 10
 	jp DelayFrames
 
@@ -578,7 +598,11 @@ BattleTransition_HorizontalStripes_:
 ; makes one full circle around the screen
 ; by animating each half circle one at a time
 BattleTransition_Circle:
+	ld a, [wOptions]
+	bit BIT_GAME_SPEED, a
+	jr z, .skipFlash
 	call BattleTransition_FlashScreen
+.skipFlash
 	lb bc, 0, SCREEN_WIDTH / 2
 	ld hl, BattleTransition_HalfCircle1
 	call BattleTransition_Circle_Sub1
@@ -612,7 +636,14 @@ BattleTransition_Circle_Sub1:
 BattleTransition_TransferDelay3:
 	ld a, 1
 	ldh [hAutoBGTransferEnabled], a
+	ld a, [wOptions]
+	bit BIT_GAME_SPEED, a
+	jr z, .lessDelay
 	call Delay3
+	jp .delayDone
+.lessDelay
+	call DelayFrame
+.delayDone
 	xor a
 	ldh [hAutoBGTransferEnabled], a
 	ret
@@ -621,7 +652,11 @@ BattleTransition_TransferDelay3:
 ; makes two half circles around the screen
 ; by animating both half circles at the same time
 BattleTransition_DoubleCircle:
+	ld a, [wOptions]
+	bit BIT_GAME_SPEED, a
+	jr z, .skipFlash
 	call BattleTransition_FlashScreen
+.skipFlash	
 	ld c, SCREEN_WIDTH / 2
 	ld hl, BattleTransition_HalfCircle1
 	ld de, BattleTransition_HalfCircle2
