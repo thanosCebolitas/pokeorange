@@ -74,6 +74,12 @@ SlidePlayerAndEnemySilhouettesOnScreen:
 	ld h, b
 	ld l, $40
 	call SetScrollXForSlidingPlayerBodyLeft ; begin background scrolling on line $40
+	ld a, [wOptions]
+	bit BIT_GAME_SPEED, a
+	jr nz, .slowerLoop
+	inc b
+	inc b
+.slowerLoop
 	inc b
 	inc b
 	ld h, $0
@@ -82,6 +88,12 @@ SlidePlayerAndEnemySilhouettesOnScreen:
 	call SlidePlayerHeadLeft
 	ld a, c
 	ldh [hSCX], a
+	ld a, [wOptions]
+	bit BIT_GAME_SPEED, a
+	jr nz, .slowerLoop2
+	dec c
+	dec c
+.slowerLoop2
 	dec c
 	dec c
 	jr nz, .slideSilhouettesLoop
@@ -111,7 +123,13 @@ SlidePlayerHeadLeft:
 	ld hl, wShadowOAMSprite00XCoord
 	ld c, $15 ; number of OAM entries
 	ld de, $4 ; size of OAM entry
+	ld a, [wOptions]
 .loop
+	bit BIT_GAME_SPEED, a
+	jr nz, .headLeftSlowLoop
+	dec [hl] ; decrement X
+	dec [hl] ; decrement X
+.headLeftSlowLoop
 	dec [hl] ; decrement X
 	dec [hl] ; decrement X
 	add hl, de ; next OAM entry
