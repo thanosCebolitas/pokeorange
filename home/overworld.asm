@@ -41,7 +41,10 @@ EnterMap::
 	ld [wJoyIgnore], a
 
 OverworldLoop::
-;	call DelayFrame
+	ld a, [wOptions]
+	bit BIT_GAME_SPEED, a
+	jr z, OverworldLoopLessDelay
+	call DelayFrame
 OverworldLoopLessDelay::
 	call DelayFrame
 	call IsSurfingPikachuInParty

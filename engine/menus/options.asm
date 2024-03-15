@@ -183,9 +183,9 @@ BattleStyleOptionStringsPointerTable:
 	dw BattleStyleSetText
 
 BattleStyleShiftText:
-	db "SHIFT@"
+	db "FAST @"
 BattleStyleSetText:
-	db "SET  @"
+	db "NORM @"
 
 OptionsMenu_SpeakerSettings:
 	ld a, [wOptions]
@@ -435,7 +435,7 @@ InitOptionsMenu:
 AllOptionsText:
 	db "TEXT SPEED :"
 	next "ANIMATION  :"
-	next "BATTLESTYLE:"
+	next "GAME SPEED :"
 	next "SOUND:"
 	next "PRINT:@"
 
