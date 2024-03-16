@@ -1014,11 +1014,24 @@ CallWithTurnFlipped:
 AnimationFlashScreenLong:
 	ld a, 3 ; cycle through the palettes 3 times
 	ld [wFlashScreenLongCounter], a
+    ld a, [wOptions]
+    bit BIT_GAME_SPEED, a
+    jr z, .fasterFlashLongMonochrome
+	ld hl, FlashScreenLongMonochrome
+	jr .fasterFlashLongMonochromeDone
+.fasterFlashLongMonochrome
+	ld hl, FlashScreenLongMonochromeFast
+.fasterFlashLongMonochromeDone
 	ld a, [wOnSGB] ; running on SGB?
 	and a
-	ld hl, FlashScreenLongMonochrome
 	jr z, .loop
+	ld a, [wOptions]
+    bit BIT_GAME_SPEED, a
+    jr z, .fasterFlashLongSGB
 	ld hl, FlashScreenLongSGB
+	jr .loop
+.fasterFlashLongSGB
+	ld hl, FlashScreenLongSGBFast
 .loop
 	push hl
 .innerLoop
@@ -1027,7 +1040,13 @@ AnimationFlashScreenLong:
 	jr z, .endOfPalettes
 	ldh [rBGP], a
 	call UpdateGBCPal_BGP
+    ld a, [wOptions]
+    bit BIT_GAME_SPEED, a
+    jr z, .innerLoopFaster
 	call FlashScreenLongDelay
+	jr .innerLoop
+.innerLoopFaster
+	call DelayFrame
 	jr .innerLoop
 .endOfPalettes
 	ld a, [wFlashScreenLongCounter]
@@ -1066,6 +1085,26 @@ FlashScreenLongSGB:
 	dc 0, 0, 0, 0
 	dc 1, 0, 0, 0
 	dc 2, 1, 0, 0
+	dc 3, 2, 1, 0
+	db 1 ; end
+
+; BG palettes
+FlashScreenLongMonochromeFast:
+	dc 3, 3, 2, 1
+	dc 3, 3, 3, 2
+	dc 3, 2, 1, 0
+	dc 1, 0, 0, 0
+	dc 1, 0, 0, 0
+	dc 3, 2, 1, 0
+	db 1 ; end
+
+; BG palettes
+FlashScreenLongSGBFast:
+	dc 3, 3, 2, 0
+	dc 3, 3, 3, 0
+	dc 3, 2, 1, 0
+	dc 1, 0, 0, 0
+	dc 1, 0, 0, 0
 	dc 3, 2, 1, 0
 	db 1 ; end
 
