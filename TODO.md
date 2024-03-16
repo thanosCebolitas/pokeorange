@@ -22,6 +22,7 @@
 [ ] Lure + repel
 [ ] Genetically engineered pkmn
 [ ] Permanent CUT trees
+[ ] Virtual battles as Bill's house
 
 ### Make it harder:
 [ ] Update teams + movesets
