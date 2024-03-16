@@ -3,8 +3,8 @@ Route9WildMons:
 	db 16, NIDORAN_M
 	db 16, NIDORAN_F
 	db 18, RATTATA
-	db 18, NIDORAN_M
-	db 18, NIDORAN_F
+	db 18, JYNX
+	db 18, JYNX
 	db 17, SPEAROW
 	db 18, NIDORINO
 	db 18, NIDORINA

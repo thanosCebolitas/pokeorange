@@ -15,14 +15,13 @@
         Access PCs
         Test Link & Trade
         Follow speed
-[ ] Buy All TMs
 [ ] Flash HM
 [ ] All pkmn
 [ ] Replay Gym + Trainers
 [ ] Lure + repel
 [ ] Genetically engineered pkmn
 [ ] Permanent CUT trees
-[ ] Virtual battles as Bill's house
+[ ] Mew
 
 ### Make it harder:
 [ ] Update teams + movesets
@@ -30,7 +29,7 @@
 [ ] OU rules
 [ ] NPC levels
 [ ] No Badge boost
-[ ] Remove all item boosts from marts / hidden places
+[ ] Remove all item boosts from hidden places
 
 ### New Content:
 [ ] Hell dungeon
@@ -40,12 +39,14 @@
 [ ] Safari fixes
 [ ] Fly & Dig
 [ ] Stat reapply
+[ ] RNG
 [ ] Other bugs??
 
 ### Misc:
 [ ] Balance??
 [ ] Others follow
 [ ] Remove Printer support
+[ ] Virtual battles as Bill's house
 
 --------------------------------------------------------------------------------
 
@@ -57,9 +58,11 @@
 [x] Running shoes
 [x] Speed option
 [x] Buy PP UP, RARE CANDY
+[x] Buy All TMs
 
 ### Make it harder:
 [x] Only SET battle type
+[x] Remove all item boosts from marts
 
 ### New Content:
 ### BUGS:
