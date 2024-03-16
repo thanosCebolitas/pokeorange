@@ -201,23 +201,44 @@ AnimateSendingOutMon:
 	jr z, .notInBattle
 	add b
 	ld [hl], a
+	ld a, [wOptions]
+    bit BIT_GAME_SPEED, a
+    jr z, .fasterSendOutMon
 	call Delay3
+	jr .fasterSendOutMonDone
+.fasterSendOutMon
+	call DelayFrame
+.fasterSendOutMonDone
 	ld bc, -(SCREEN_WIDTH * 2 + 1)
 	add hl, bc
 	ld a, 1
 	ld [wDownscaledMonSize], a
 	lb bc, 3, 3
 	predef CopyDownscaledMonTiles
+    ld a, [wOptions]
+    bit BIT_GAME_SPEED, a
+    jr z, .fasterSendOutMon2
 	ld c, 4
 	call DelayFrames
+	jr .fasterSendOutMonDone2
+.fasterSendOutMon2
+	call DelayFrame
+.fasterSendOutMonDone2
 	ld bc, -(SCREEN_WIDTH * 2 + 1)
 	add hl, bc
 	xor a
 	ld [wDownscaledMonSize], a
 	lb bc, 5, 5
 	predef CopyDownscaledMonTiles
+ld a, [wOptions]
+    bit BIT_GAME_SPEED, a
+    jr z, .fasterSendOutMon3
 	ld c, 5
 	call DelayFrames
+	jr .fasterSendOutMonDone3
+.fasterSendOutMon3
+	call DelayFrame
+.fasterSendOutMonDone3
 	ld bc, -(SCREEN_WIDTH * 2 + 1)
 	jr .next
 .notInBattle

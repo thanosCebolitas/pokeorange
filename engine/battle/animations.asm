@@ -163,7 +163,14 @@ DrawFrameBlock:
 	jr z, .advanceFrameBlockDestAddr ; skip delay and don't clean OAM buffer
 	ld a, [wSubAnimFrameDelay]
 	ld c, a
+	ld a, [wOptions]
+    bit BIT_GAME_SPEED, a
+    jr z, .afterDrawingTilesFaster
 	call DelayFrames
+	jr .afterDrawingTilesFasterDone
+.afterDrawingTilesFaster
+	call DelayFrame
+.afterDrawingTilesFasterDone
 	ld a, [wFBMode]
 	cp FRAMEBLOCKMODE_03
 	jr z, .advanceFrameBlockDestAddr ; skip cleaning OAM buffer

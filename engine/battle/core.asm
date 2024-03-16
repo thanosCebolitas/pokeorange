@@ -6967,7 +6967,14 @@ HandleExplodingAnimation:
 ; fallthrough
 PlayMoveAnimation:
 	ld [wAnimationID], a
+	ld a, [wOptions]
+    bit BIT_GAME_SPEED, a
+    jr z, .fasterMoveAnimation
 	call Delay3
+	jr .fasterMoveAnimationDone
+.fasterMoveAnimation
+	call DelayFrame
+.fasterMoveAnimationDone
 	predef MoveAnimation
 	callfar Func_78e98
 	ret
