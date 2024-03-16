@@ -15,8 +15,6 @@
         Access PCs
         Test Link & Trade
         Follow speed
-[ ] Flash HM
-[ ] All pkmn
 [ ] Replay Gym + Trainers
 [ ] Lure + repel
 [ ] Genetically engineered pkmn
@@ -59,6 +57,8 @@
 [x] Speed option
 [x] Buy PP UP, RARE CANDY
 [x] Buy All TMs
+[x] All pkmn
+[x] Flash HM
 
 ### Make it harder:
 [x] Only SET battle type

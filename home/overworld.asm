@@ -475,7 +475,7 @@ WarpFound2::
 	ldh a, [hWarpDestinationMap]
 	ld [wCurMap], a
 	cp ROCK_TUNNEL_1F
-	jr nz, .notRockTunnel
+	jr .notRockTunnel
 	ld a, $06
 	ld [wMapPalOffset], a
 	call GBFadeOutToBlack
