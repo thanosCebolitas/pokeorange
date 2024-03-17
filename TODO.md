@@ -16,10 +16,10 @@
         Test Link & Trade
         Follow speed
 [ ] Replay Gym + Trainers
-[ ] Lure + repel
-[ ] Genetically engineered pkmn
 [ ] Permanent CUT trees
 [ ] Mew
+[ ] Evolve without trade
+[ ] Forget HMs
 
 ### Make it harder:
 [ ] Update teams + movesets
@@ -45,6 +45,10 @@
 [ ] Others follow
 [ ] Remove Printer support
 [ ] Virtual battles as Bill's house
+[ ] Replace Ash with Pokemon
+[ ] Modify Pikachu's stat to match eevee
+[ ] Compatibility with original yellow
+[ ] Lure + repel
 
 --------------------------------------------------------------------------------
 
@@ -59,6 +63,7 @@
 [x] Buy All TMs
 [x] All pkmn
 [x] Flash HM
+[x] Genetically engineered pkmn
 
 ### Make it harder:
 [x] Only SET battle type

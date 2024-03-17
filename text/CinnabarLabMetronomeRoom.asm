@@ -30,9 +30,43 @@ _CinnabarLabMetronomeRoomScientist1TM35NoRoomText::
 	done
 
 _CinnabarLabMetronomeRoomScientist2Text::
-	text "EEVEE can evolve"
-	line "into 1 of 3 kinds"
-	cont "of #MON."
+	text "I'm developing"
+	line "an experimental"
+	cont "treatment. It"
+	cont "will genetically"
+	cont "enhance your"
+	cont "#MON."
+
+	para "It costs"
+	line "¥300000!"
+
+	para "Are you"
+	line "interested?"
+	done
+
+_CinnabarLabMetronomeRoomScientist2TextTreatment::
+	text "Wait for it"
+	line "..."
+	done
+
+_CinnabarLabMetronomeRoomScientist2EnhancedText::
+	text "Treatment was"
+	line "successful!"
+	done
+
+_CinnabarLabMetronomeRoomScientist2NotEnoughMoneyText::
+	text "You don't have"
+	line "enough money."
+	done
+
+_CinnabarLabMetronomeRoomScientist2NotEnhancedText::
+	text "Another time"
+	line "maybe."
+	done
+
+_CinnabarLabMetronomeRoomScientist2PerfectText::
+	text "This #MON is"
+	line "already perfect."
 	done
 
 _CinnabarLabMetronomeRoomPCText::

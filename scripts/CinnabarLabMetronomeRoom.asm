@@ -50,7 +50,116 @@ CinnabarLabMetronomeRoomScientist1Text:
 	text_end
 
 CinnabarLabMetronomeRoomScientist2Text:
+	text_asm
+	call SaveScreenTilesToBuffer2
+	ld hl, .Text
+	call PrintText
+	call YesNoChoice
+	ld a, [wCurrentMenuItem]
+	and a
+	jp nz, .nothingToDo
+;
+; Check if player has enough money
+;
+	xor a
+	ldh [hMoney + 1], a
+	ldh [hMoney + 2], a
+	ld a, $30
+	ldh [hMoney], a
+	call HasEnoughMoney
+	jr nc, .enoughMoney
+	ld hl, .TextNotEnoughMoney
+	call PrintText
+	jp .done
+;
+; Open party menu
+;
+.enoughMoney
+	xor a
+	ld [wPartyMenuTypeOrMessageID], a
+	ld [wUpdateSpritesEnabled], a
+	ld [wMenuItemToSwap], a
+	call DisplayPartyMenu
+; Restore screen
+	push af
+	call GBPalWhiteOutWithDelay3
+	call RestoreScreenTilesAndReloadTilePatterns
+	call LoadGBPal
+	pop af
+;
+; Check selection and apply changes
+;
+	jr c, .nothingToDo
+	ld hl, .TextTreatment
+	call PrintText
+	ld hl, wPartyMon1DVs
+	ld bc, wPartyMon2 - wPartyMon1
+	ld a, [wWhichPokemon]
+	call AddNTimes
+; Check if perfect already
+	push hl
+	push bc
+	ld a, $ff
+	cp [hl]
+	jr nz, .continue
+	inc hl
+	cp [hl]
+.continue
+	pop bc
+	pop hl
+	jr z, .perfectPokemon
+; Set DVs to max
+    ldi [hl], a
+    ld [hl], a
+; Recalculate stats
+	xor a
+	ld [wMonDataLocation], a
+	call LoadMonData
+	farcall CalcLevelFromExperience
+	ld a, d
+	ld [wCurEnemyLVL], a
+	ld hl, wPartyMon1MaxHP
+	ld bc, wPartyMon2 - wPartyMon1
+	ld a, [wWhichPokemon]
+	call AddNTimes
+	ld d, h
+	ld e, l
+	ld hl, wPartyMon1HPExp - 1
+	ld a, [wWhichPokemon]
+	call AddNTimes
+	ld b, $1
+	call CalcStats
+; Remove money
+	call SubtractAmountPaidFromMoney
+	ld hl, .TextCompleted
+	call PrintText
+	jr .done
+.perfectPokemon
+	ld hl, .TextPerfect
+	call PrintText
+	jr .done
+.nothingToDo
+	ld hl, .TextNotCompleted
+	call PrintText
+.done
+	jp TextScriptEnd
+.Text
 	text_far _CinnabarLabMetronomeRoomScientist2Text
+	text_end
+.TextTreatment
+	text_far _CinnabarLabMetronomeRoomScientist2TextTreatment
+	text_end
+.TextCompleted
+	text_far _CinnabarLabMetronomeRoomScientist2EnhancedText
+	text_end
+.TextNotEnoughMoney
+	text_far _CinnabarLabMetronomeRoomScientist2NotEnoughMoneyText
+	text_end
+.TextNotCompleted
+	text_far _CinnabarLabMetronomeRoomScientist2NotEnhancedText
+	text_end
+.TextPerfect
+	text_far _CinnabarLabMetronomeRoomScientist2PerfectText
 	text_end
 
 CinnabarLabMetronomeRoomPCText:
