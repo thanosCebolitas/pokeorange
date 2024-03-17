@@ -16,9 +16,7 @@
         Test Link & Trade
         Follow speed
 [ ] Replay Gym + Trainers
-[ ] Permanent CUT trees
 [ ] Mew
-[ ] Evolve without trade
 [ ] Forget HMs
 
 ### Make it harder:
@@ -49,6 +47,7 @@
 [ ] Modify Pikachu's stat to match eevee
 [ ] Compatibility with original yellow
 [ ] Lure + repel
+[ ] Permanent CUT trees
 
 --------------------------------------------------------------------------------
 
@@ -64,6 +63,7 @@
 [x] All pkmn
 [x] Flash HM
 [x] Genetically engineered pkmn
+[x] Evolve without trade
 
 ### Make it harder:
 [x] Only SET battle type
