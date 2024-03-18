@@ -134,8 +134,18 @@ CeladonMansion3FGameDesignerText:
 	xor a
 	ld [wDoNotWaitForButtonPressAfterDisplayingText], a
 	ld hl, .UnlockedDiplomaPrinting
+	call PrintText
+	call CeladonMansion3_PokedexCount
+	cp NUM_POKEMON - 1
+	jr nz, .done2
+	ld hl, .UnlockedMew
+	call PrintText
+	lb bc, MEW, 50
+	call GivePokemon
+	jr .done2
 .done
 	call PrintText
+.done2
 	jp TextScriptEnd
 
 .Text:
@@ -153,6 +163,10 @@ CeladonMansion3FGameDesignerText:
 
 .UnlockedDiplomaPrinting
 	text_far _CeladonMansion3FGameDesignerCompletedDexText2
+	text_end
+
+.UnlockedMew
+	text_far _CeladonMansion3FGameDesignerMewGift
 	text_end
 
 CeladonMansion3FGameProgramPCText:

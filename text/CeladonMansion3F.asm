@@ -91,7 +91,13 @@ _CeladonMansion3FGameDesignerCompletedDexText2::
 	line "DIPLOMA to"
 	cont "the development"
 	cont "crew."
-	done
+	prompt
+
+_CeladonMansion3FGameDesignerMewGift::
+	text "Wait! I have"
+	line "another gift"
+	cont "for you!!"
+	prompt
 
 _CeladonMansion3FGameProgramPCText::
 	text "It's the game"

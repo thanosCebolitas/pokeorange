@@ -18,6 +18,7 @@
 [ ] Replay Gym + Trainers
 [ ] Mew
 [ ] Forget HMs
+[ ] Eevee
 
 ### Make it harder:
 [ ] Update teams + movesets
@@ -48,6 +49,7 @@
 [ ] Compatibility with original yellow
 [ ] Lure + repel
 [ ] Permanent CUT trees
+[ ] Surf minigame
 
 --------------------------------------------------------------------------------
 
