@@ -115,6 +115,10 @@ CeladonGymErikaText:
 .afterBeat
 	ld hl, .PostBattleAdviceText
 	call PrintText
+	callfar RematchTrainer
+	push af
+	jr z, .rematchFight
+	pop af
 	jr .done
 .beforeBeat
 	ld hl, .PreBattleText
@@ -125,10 +129,13 @@ CeladonGymErikaText:
 	ld hl, .ReceivedRainbowBadgeText
 	ld de, .ReceivedRainbowBadgeText
 	call SaveEndBattleTextPointers
+.rematchFight
 	ldh a, [hSpriteIndex]
 	ld [wSpriteIndex], a
 	call EngageMapTrainer
 	call InitBattleEnemyParameters
+	pop af
+	jr z, .done
 	ld a, $4
 	ld [wGymLeaderNo], a
 	ld a, SCRIPT_CELADONGYM_ERIKA_POST_BATTLE
