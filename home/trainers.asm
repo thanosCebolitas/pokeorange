@@ -102,11 +102,15 @@ TalkToTrainer::
 	jr z, .trainerNotYetFought     ; test trainer's flag
 	ld a, $6
 	call ReadTrainerHeaderInfo     ; print after battle text
-	jp PrintText
+	call PrintText
+	callfar RematchTrainer
+	jr z, .trainerRematchFight
+	ret
 .trainerNotYetFought
 	ld a, $4
 	call ReadTrainerHeaderInfo     ; print before battle text
 	call PrintText
+.trainerRematchFight
 	ld a, $a
 	call ReadTrainerHeaderInfo     ; (?) does nothing apparently (maybe bug in ReadTrainerHeaderInfo)
 	push de

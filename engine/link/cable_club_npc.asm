@@ -218,3 +218,21 @@ CloseLinkConnection:
 	ld a, START_TRANSFER_EXTERNAL_CLOCK
 	ldh [rSC], a
 	ret
+
+; I'm too lazy to find space elsewhere
+; and ROM0 is full atm :)
+RematchTrainer::
+	push bc
+	call WaitForTextScrollButtonPress
+	ld hl, .thisRematchTrainer
+	call PrintText
+	ld a, 1
+  	ld [wDoNotWaitForButtonPressAfterDisplayingText], a
+	call YesNoChoice
+	ld a, [wCurrentMenuItem]
+	and a
+	pop bc
+	ret
+.thisRematchTrainer
+	text_far _RematchTrainer
+	text_end

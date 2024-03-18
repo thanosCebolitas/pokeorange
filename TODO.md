@@ -15,7 +15,7 @@
         Access PCs
         Test Link & Trade
         Follow speed
-[ ] Replay Gym + Trainers
+[ ] Replay Gym Leaders
 
 ### Make it harder:
 [ ] Update teams + movesets
@@ -66,6 +66,7 @@
 [x] Evolve without trade
 [x] Mew gift
 [x] Can overwrite HMs
+[x] Replay Trainers
 
 ### Make it harder:
 [x] Only SET battle type

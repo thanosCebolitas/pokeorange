@@ -214,3 +214,7 @@ _CableClubNPCPleaseApplyHereHaveToSaveText::
 	line "the link, we have"
 	cont "to save the game."
 	done
+
+_RematchTrainer::
+	text "Want a rematch?"
+	done
