@@ -16,7 +16,6 @@
         Test Link & Trade
         Follow speed
 [ ] Replay Gym + Trainers
-[ ] Forget HMs
 
 ### Make it harder:
 [ ] Update teams + movesets
@@ -66,6 +65,7 @@
 [x] Genetically engineered pkmn
 [x] Evolve without trade
 [x] Mew gift
+[x] Can overwrite HMs
 
 ### Make it harder:
 [x] Only SET battle type

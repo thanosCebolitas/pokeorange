@@ -168,7 +168,8 @@ TryingToLearn:
 	pop bc
 	pop de
 	ld a, d
-	jr c, .hm
+; Uncomment if you want HMs to not be overwritten
+;	jr c, .hm
 	pop hl
 	add hl, bc
 	and a
