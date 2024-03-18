@@ -1,7 +1,7 @@
 PokemonMansion3FWildMons:
 	def_grass_wildmons 10 ; encounter rate
 	db 40, RATTATA
-	db 40, RATICATE
+	db 40, MAGMAR
 	db 32, GRIMER
 	db 35, GRIMER
 	db 43, RATTATA

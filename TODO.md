@@ -16,9 +16,7 @@
         Test Link & Trade
         Follow speed
 [ ] Replay Gym + Trainers
-[ ] Mew
 [ ] Forget HMs
-[ ] Eevee
 
 ### Make it harder:
 [ ] Update teams + movesets
@@ -50,6 +48,7 @@
 [ ] Lure + repel
 [ ] Permanent CUT trees
 [ ] Surf minigame
+[ ] Rebalance wil pkmn locations
 
 --------------------------------------------------------------------------------
 
@@ -66,6 +65,7 @@
 [x] Flash HM
 [x] Genetically engineered pkmn
 [x] Evolve without trade
+[x] Mew gift
 
 ### Make it harder:
 [x] Only SET battle type
