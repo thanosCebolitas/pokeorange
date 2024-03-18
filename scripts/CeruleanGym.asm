@@ -101,6 +101,10 @@ CeruleanGymMistyText:
 .afterBeat
 	ld hl, .TM11ExplanationText
 	call PrintText
+	callfar RematchTrainer
+	push af
+	jr z, .rematchFight
+	pop af
 	jr .done
 .beforeBeat
 	ld hl, .PreBattleText
@@ -111,10 +115,13 @@ CeruleanGymMistyText:
 	ld hl, CeruleanGymMistyReceivedCascadeBadgeText
 	ld de, CeruleanGymMistyReceivedCascadeBadgeText
 	call SaveEndBattleTextPointers
+.rematchFight
 	ldh a, [hSpriteIndex]
 	ld [wSpriteIndex], a
 	call EngageMapTrainer
 	call InitBattleEnemyParameters
+	pop af
+	jr z, .done
 	ld a, $2
 	ld [wGymLeaderNo], a
 	xor a
