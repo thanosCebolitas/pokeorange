@@ -123,6 +123,10 @@ VermilionGymLTSurgeText:
 .got_tm24_already
 	ld hl, .PostBattleAdviceText
 	call PrintText
+	callfar RematchTrainer
+	push af
+	jr z, .rematchFight
+	pop af
 	jr .text_script_end
 .before_beat
 	ld hl, .PreBattleText
@@ -133,10 +137,13 @@ VermilionGymLTSurgeText:
 	ld hl, VermilionGymLTSurgeReceivedThunderBadgeText
 	ld de, VermilionGymLTSurgeReceivedThunderBadgeText
 	call SaveEndBattleTextPointers
+.rematchFight
 	ldh a, [hSpriteIndex]
 	ld [wSpriteIndex], a
 	call EngageMapTrainer
 	call InitBattleEnemyParameters
+	pop af
+	jr z, .text_script_end
 	ld a, $3
 	ld [wGymLeaderNo], a
 	xor a
