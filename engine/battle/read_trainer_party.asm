@@ -62,6 +62,9 @@ ReadTrainer:
 	pop hl
 	jr .LoopTrainerData
 .SpecialTrainer
+	call GetPlayerMaxLevel
+	ld d, a
+.SpecialTrainer2
 ; if this code is being run:
 ; - each pokemon has a specific level
 ;      (as opposed to the whole team being of the same level)
@@ -69,6 +72,10 @@ ReadTrainer:
 	ld a, [hli]
 	and a ; have we reached the end of the trainer data?
 	jr z, .AddAdditionalMoveData
+	cp d
+	jr nc, .defaultIsGreater
+	ld a, d
+.defaultIsGreater	
 	ld [wCurEnemyLVL], a
 	ld a, [hli]
 	ld [wcf91], a
@@ -77,7 +84,7 @@ ReadTrainer:
 	push hl
 	call AddPartyMon
 	pop hl
-	jr .SpecialTrainer
+	jr .SpecialTrainer2
 .AddAdditionalMoveData
 ; does the trainer have additional move data?
 	ld a, [wTrainerClass]
@@ -142,4 +149,31 @@ ReadTrainer:
 	inc de
 	dec b
 	jr nz, .LastLoop ; repeat wCurEnemyLVL times
+	ret
+
+;
+; Get player max pkmn lvl
+; - result in a
+GetPlayerMaxLevel:
+	push bc
+	push de
+	push hl
+	ld hl, wPartyMon1Level
+	ld bc, wPartyMon2 - wPartyMon1
+	ld d, 1
+	ld a, [wPartyCount]
+	ld e, a
+.SpecialTrainerLoop
+	ld a, [hl]
+	cp d
+	jr c, .alreadyBigger
+	ld d, a
+.alreadyBigger
+	add hl, bc
+	dec e
+	jr nz, .SpecialTrainerLoop
+	ld a, d
+	pop hl
+	pop de
+	pop bc
 	ret
