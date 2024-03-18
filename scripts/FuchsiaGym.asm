@@ -115,6 +115,10 @@ FuchsiaGymKogaText:
 .afterBeat
 	ld hl, .PostBattleAdviceText
 	call PrintText
+	callfar RematchTrainer
+	push af
+	jr z, .rematchFight
+	pop af
 	jr .done
 .beforeBeat
 	ld hl, .BeforeBattleText
@@ -125,10 +129,16 @@ FuchsiaGymKogaText:
 	ld hl, .ReceivedSoulBadgeText
 	ld de, .ReceivedSoulBadgeText
 	call SaveEndBattleTextPointers
+	ld a, 1
+	and a
+	push af
+.rematchFight
 	ldh a, [hSpriteIndex]
 	ld [wSpriteIndex], a
 	call EngageMapTrainer
 	call InitBattleEnemyParameters
+	pop af
+	jr z, .done
 	ld a, $5
 	ld [wGymLeaderNo], a
 	xor a
