@@ -1,8 +1,8 @@
 VictoryRoad1FWildMons:
 	def_grass_wildmons 15 ; encounter rate
-	db 26, GEODUDE
-	db 31, GEODUDE
-	db 36, GEODUDE
+	db 35, AERODACTYL
+	db 35, KABUTO
+	db 35, OMANYTE
 	db 39, ZUBAT
 	db 44, ZUBAT
 	db 41, GEODUDE

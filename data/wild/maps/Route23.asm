@@ -1,7 +1,7 @@
 Route23WildMons:
 	def_grass_wildmons 10 ; encounter rate
-	db 41, NIDORINO
-	db 41, NIDORINA
+	db 41, HITMONLEE
+	db 41, HITMONCHAN
 	db 36, MANKEY
 	db 25, EEVEE
 	db 25, EEVEE

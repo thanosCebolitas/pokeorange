@@ -15,8 +15,6 @@
         Access PCs
         Test Link & Trade
         Follow speed
-[ ] Replay Gym Leaders
-[ ] Hitmochan / Hitmonlee / Fossils
 
 ### Make it harder:
 [ ] Update teams + movesets
@@ -68,6 +66,7 @@
 [x] Mew gift
 [x] Can overwrite HMs
 [x] Replay Trainers
+[x] Replay Gym Leaders
 
 ### Make it harder:
 [x] Only SET battle type

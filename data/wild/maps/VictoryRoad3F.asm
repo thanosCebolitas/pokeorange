@@ -1,8 +1,8 @@
 VictoryRoad3FWildMons:
 	def_grass_wildmons 15 ; encounter rate
-	db 36, GEODUDE
-	db 44, GOLBAT
-	db 41, GEODUDE
+	db 40, AERODACTYL
+	db 40, KABUTO
+	db 40, OMANYTE
 	db 49, ONIX
 	db 46, GEODUDE
 	db 41, GRAVELER
