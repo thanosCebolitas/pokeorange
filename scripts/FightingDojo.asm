@@ -117,10 +117,16 @@ FightingDojoKarateMasterText:
 	ld hl, .DefeatedText
 	ld de, .DefeatedText
 	call SaveEndBattleTextPointers
+	ld a, 1
+	and a
+	push af
+.rematchFight
 	ldh a, [hSpriteIndexOrTextID]
 	ld [wSpriteIndex], a
 	call EngageMapTrainer
 	call InitBattleEnemyParameters
+	pop af
+	jr z, .end
 	ld a, SCRIPT_FIGHTINGDOJO_KARATE_MASTER_POST_BATTLE
 	ld [wFightingDojoCurScript], a
 	ld [wCurMapScript], a
@@ -128,6 +134,10 @@ FightingDojoKarateMasterText:
 .defeated_dojo
 	ld hl, .StayAndTrainWithUsText
 	call PrintText
+	callfar RematchTrainer
+	push af
+	jr z, .rematchFight
+	pop af
 	jr .end
 .defeated_master
 	ld hl, .IWillGiveYouAPokemonText
