@@ -115,6 +115,9 @@ CeruleanGymMistyText:
 	ld hl, CeruleanGymMistyReceivedCascadeBadgeText
 	ld de, CeruleanGymMistyReceivedCascadeBadgeText
 	call SaveEndBattleTextPointers
+	ld a, 1
+	and a
+	push af
 .rematchFight
 	ldh a, [hSpriteIndex]
 	ld [wSpriteIndex], a

@@ -129,6 +129,9 @@ CeladonGymErikaText:
 	ld hl, .ReceivedRainbowBadgeText
 	ld de, .ReceivedRainbowBadgeText
 	call SaveEndBattleTextPointers
+	ld a, 1
+	and a
+	push af
 .rematchFight
 	ldh a, [hSpriteIndex]
 	ld [wSpriteIndex], a

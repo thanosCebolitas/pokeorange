@@ -122,6 +122,9 @@ PewterGymBrockText:
 	ld hl, PewterGymBrockReceivedBoulderBadgeText
 	ld de, PewterGymBrockReceivedBoulderBadgeText
 	call SaveEndBattleTextPointers
+	ld a, 1
+	and a
+	push af
 .rematchFight
 	ldh a, [hSpriteIndex]
 	ld [wSpriteIndex], a

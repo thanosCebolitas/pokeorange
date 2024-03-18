@@ -16,6 +16,7 @@
         Test Link & Trade
         Follow speed
 [ ] Replay Gym Leaders
+[ ] Hitmochan / Hitmonlee / Fossils
 
 ### Make it harder:
 [ ] Update teams + movesets

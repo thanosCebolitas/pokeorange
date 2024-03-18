@@ -137,6 +137,9 @@ VermilionGymLTSurgeText:
 	ld hl, VermilionGymLTSurgeReceivedThunderBadgeText
 	ld de, VermilionGymLTSurgeReceivedThunderBadgeText
 	call SaveEndBattleTextPointers
+	ld a, 1
+	and a
+	push af
 .rematchFight
 	ldh a, [hSpriteIndex]
 	ld [wSpriteIndex], a

@@ -130,6 +130,9 @@ SaffronGymSabrinaText:
 	ld hl, .ReceivedMarshBadgeText
 	ld de, .ReceivedMarshBadgeText
 	call SaveEndBattleTextPointers
+	ld a, 1
+	and a
+	push af
 .rematchFight
 	ldh a, [hSpriteIndex]
 	ld [wSpriteIndex], a
