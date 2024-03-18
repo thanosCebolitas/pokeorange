@@ -116,6 +116,10 @@ SaffronGymSabrinaText:
 .afterBeat
 	ld hl, .PostBattleAdviceText
 	call PrintText
+	callfar RematchTrainer
+	push af
+	jr z, .rematchFight
+	pop af
 	jr .done
 .beforeBeat
 	ld hl, .Text
@@ -126,10 +130,13 @@ SaffronGymSabrinaText:
 	ld hl, .ReceivedMarshBadgeText
 	ld de, .ReceivedMarshBadgeText
 	call SaveEndBattleTextPointers
+.rematchFight
 	ldh a, [hSpriteIndex]
 	ld [wSpriteIndex], a
 	call EngageMapTrainer
 	call InitBattleEnemyParameters
+	pop af
+	jr z, .done
 	ld a, $6
 	ld [wGymLeaderNo], a
 	ld a, SCRIPT_SAFFRONGYM_SABRINA_POST_BATTLE
