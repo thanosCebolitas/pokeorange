@@ -254,6 +254,8 @@ CinnabarGymStartBattleScript:
 	ld [wSpriteIndex], a
 	call EngageMapTrainer
 	call InitBattleEnemyParameters
+	pop af
+	jp z, TextScriptEnd
 	ld hl, wd72d
 	set 6, [hl]
 	set 7, [hl]
@@ -281,6 +283,10 @@ CinnabarGymBlaineText:
 .afterBeat
 	ld hl, .PostBattleAdviceText
 	call PrintText
+	callfar RematchTrainer
+	push af
+	jr z, .rematchFight
+	pop af
 	jp TextScriptEnd
 .beforeBeat
 	ld hl, .PreBattleText
@@ -288,6 +294,10 @@ CinnabarGymBlaineText:
 	ld hl, .ReceivedVolcanoBadgeText
 	ld de, .ReceivedVolcanoBadgeText
 	call SaveEndBattleTextPointers
+	ld a, 1
+	and a
+	push af
+.rematchFight
 	ld a, $7
 	ld [wGymLeaderNo], a
 	jp CinnabarGymStartBattleScript
@@ -330,10 +340,18 @@ CinnabarGymSuperNerd1:
 	ld hl, .EndBattleText
 	ld de, .EndBattleText
 	call SaveEndBattleTextPointers
+	ld a, 1
+	and a
+	push af
+.rematchFight
 	jp CinnabarGymStartBattleScript
 .defeated
 	ld hl, .AfterBattleText
 	call PrintText
+	callfar RematchTrainer
+	push af
+	jr z, .rematchFight
+	pop af
 	jp TextScriptEnd
 
 .BattleText:
@@ -365,10 +383,18 @@ CinnabarGymSuperNerd2:
 	ld hl, .EndBattleText
 	ld de, .EndBattleText
 	call SaveEndBattleTextPointers
+	ld a, 1
+	and a
+	push af
+.rematchFight
 	jp CinnabarGymStartBattleScript
 .defeated
 	ld hl, .AfterBattleText
 	call PrintText
+	callfar RematchTrainer
+	push af
+	jr z, .rematchFight
+	pop af
 	jp TextScriptEnd
 
 .BattleText:
@@ -400,10 +426,18 @@ CinnabarGymSuperNerd3:
 	ld hl, .EndBattleText
 	ld de, .EndBattleText
 	call SaveEndBattleTextPointers
+	ld a, 1
+	and a
+	push af
+.rematchFight
 	jp CinnabarGymStartBattleScript
 .defeated
 	ld hl, .AfterBattleText
 	call PrintText
+	callfar RematchTrainer
+	push af
+	jr z, .rematchFight
+	pop af
 	jp TextScriptEnd
 
 .BattleText:
@@ -435,10 +469,18 @@ CinnabarGymSuperNerd4:
 	ld hl, .EndBattleText
 	ld de, .EndBattleText
 	call SaveEndBattleTextPointers
+	ld a, 1
+	and a
+	push af
+.rematchFight
 	jp CinnabarGymStartBattleScript
 .defeated
 	ld hl, .AfterBattleText
 	call PrintText
+	callfar RematchTrainer
+	push af
+	jr z, .rematchFight
+	pop af
 	jp TextScriptEnd
 
 .BattleText:
@@ -470,10 +512,18 @@ CinnabarGymSuperNerd5:
 	ld hl, .EndBattleText
 	ld de, .EndBattleText
 	call SaveEndBattleTextPointers
+	ld a, 1
+	and a
+	push af
+.rematchFight
 	jp CinnabarGymStartBattleScript
 .defeated
 	ld hl, .AfterBattleText
 	call PrintText
+	callfar RematchTrainer
+	push af
+	jr z, .rematchFight
+	pop af
 	jp TextScriptEnd
 
 .BattleText:
@@ -505,10 +555,18 @@ CinnabarGymSuperNerd6:
 	ld hl, .EndBattleText
 	ld de, .EndBattleText
 	call SaveEndBattleTextPointers
+	ld a, 1
+	and a
+	push af
+.rematchFight
 	jp CinnabarGymStartBattleScript
 .defeated
 	ld hl, .AfterBattleText
 	call PrintText
+	callfar RematchTrainer
+	push af
+	jr z, .rematchFight
+	pop af
 	jp TextScriptEnd
 
 .BattleText:
@@ -540,10 +598,18 @@ CinnabarGymSuperNerd7:
 	ld hl, .EndBattleText
 	ld de, .EndBattleText
 	call SaveEndBattleTextPointers
+	ld a, 1
+	and a
+	push af
+.rematchFight
 	jp CinnabarGymStartBattleScript
 .defeated
 	ld hl, .AfterBattleText
 	call PrintText
+	callfar RematchTrainer
+	push af
+	jr z, .rematchFight
+	pop af
 	jp TextScriptEnd
 
 .BattleText:
