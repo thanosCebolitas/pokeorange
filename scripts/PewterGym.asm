@@ -108,6 +108,10 @@ PewterGymBrockText:
 .afterBeat
 	ld hl, .PostBattleAdviceText
 	call PrintText
+	callfar RematchTrainer
+	push af
+	jr z, .rematchFight
+	pop af
 	jr .done
 .beforeBeat
 	ld hl, .PreBattleText
@@ -118,10 +122,13 @@ PewterGymBrockText:
 	ld hl, PewterGymBrockReceivedBoulderBadgeText
 	ld de, PewterGymBrockReceivedBoulderBadgeText
 	call SaveEndBattleTextPointers
+.rematchFight
 	ldh a, [hSpriteIndex]
 	ld [wSpriteIndex], a
 	call EngageMapTrainer
 	call InitBattleEnemyParameters
+	pop af
+	jr z, .done
 	ld a, $1
 	ld [wGymLeaderNo], a
 	xor a
