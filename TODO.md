@@ -28,6 +28,7 @@
 - [ ] No Badge boost
 - [ ] Rebalance wild pkmn locations
 - [ ] Remove all item boosts from hidden places
+- [ ] Disable Items for Gyms & E4
 
 ### New Content:
 - [ ] Hell dungeon
@@ -51,6 +52,7 @@
 - [ ] Lure + repel
 - [ ] Permanent CUT trees
 - [ ] Surf minigame
+- [ ] In-game traded should have max stat exp
 
 --------------------------------------------------------------------------------
 

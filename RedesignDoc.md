@@ -94,47 +94,580 @@ Dugtrio, Rhydon, Nidoking, Nidoqueen, Sandslash, Golem
 --------------------------------------------------------------------------------
 
 #### Pallet
+[Water]
+Seadra, Horsea
+Seaking, Goldeen
+Golduck, Psyduck
+
 #### Route 1
+Rattata
+Pidgey
+Jigglypuff
+Mr. Mime
+Rattata
+Pidgey
+Jigglypuff
+Mr. Mime
+Rattata
+Pidgey
+
 #### Route 22
+Cubone
+Ponyta
+Mankey
+Machop
+Rattata
+Pidgey
+Jigglypuff
+Mr. Mime
+Rattata
+Pidgey
+
 #### Route 2
+Farfetch'd
+Spearow
+Rattata
+Pidgey
+Jigglypuff
+Mr. Mime
+Cubone
+Ponyta
+Mankey
+Machop
+
 #### Viridian Forest
+Oddish
+Paras
+Venonat
+Caterpie
+Weedle
+Oddish
+Paras
+Venonat
+Metapod
+Kakuna
+
 #### PewterCity [Brock]
 #### Route 3
-#### Mt. Moon
+Clefairy
+Oddish
+Paras
+Venonat
+Caterpie
+Weedle
+Oddish
+Paras
+Metapod
+Kakuna
+
+#### Mt. Moon 1
+Geodude
+Zubat
+Clefairy
+Lickitung
+Geodude
+Zubat
+Clefairy
+Lickitung
+Geodude
+Zubat
+
+#### Mt. Moon 2
+Geodude
+Zubat
+Clefairy
+Lickitung
+Onix
+Ditto
+Geodude
+Zubat
+Clefairy
+Lickitung
+
+#### Mt. Moon 3
+Geodude
+Onix
+Clefairy
+Zubat
+Lickitung
+Ditto
+Geodude
+Onix
+Clefairy
+Zubat
+
 #### Route 4
+Tangela
+Growlithe
+Oddish
+Paras
+Venonat
+Metapod
+Kakuna
+Oddish
+Tangela
+Clefairy
+
 #### Cerulean City [Misty]
+[Traded]
+Jynx
+
+[Water]
+????
+
 #### Route 24
+Doduo
+Tangela
+Growlithe
+Oddish
+Paras
+Venonat
+Butterfree
+Beedrill
+Doduo
+Tangela
+
+[Water]
+Dewgong, Seel
+Seadra, Horsea
+Seaking, Goldeen
+Golduck, Psyduck
+
 #### Route 25
+Voltorb
+Magnemite
+Nidoran♀
+Nidoran♂
+Doduo
+Tangela
+Growlithe
+Oddish
+Nidorina
+Nidorino
+
+#### Route 5
+Sandshrew
+Nidoran♀
+Nidoran♂
+Doduo
+Tangela
+Oddish
+Paras
+Sandshrew
+Nidorina
+Nidorino
+Gloom
+
+[Traded]
+Machoke
+
 #### Route 6
+Sandshrew
+Nidoran♀
+Nidoran♂
+Doduo
+Tangela
+Oddish
+Paras
+Gloom
+Nidorina
+Nidorino
+Sandshrew
+
+[Water]
+????
+
 #### Route 11
-#### Vermillion City [Lt. Sarge]
-#### SS. Anne
+Sandshrew
+Nidoran♀
+Nidoran♂
+Doduo
+Tangela
+Oddish
+Parasect, Paras
+Gloom
+Nidorina
+Nidorino
+
+[Traded]
+Dugtrio
+
 #### Diglet's Cave
+Diglett
+Diglett
+Diglett
+Diglett
+Diglett
+Sandshrew
+Sandshrew
+Dugtrio
+Dugtrio
+Sandslash
+
+#### SS. Anne
+[Water]
+Lapras
+Jynx
+Dewgong, Seel
+Seadra, Horsea
+
+#### Vermillion City [Lt. Sarge]
+
 #### Route 9
+Vulpix
+Growlithe
+Doduo
+Voltorb
+Magnemite
+Vulpix
+Growlithe
+Doduo
+Voltorb
+Magnemite
+
+[Water]
+Blastoise, Wartortle, Squirtle
+Tentacruel, Tentacool
+Lapras
+Jynx
+Dewgong, Seel
+
 #### Lavender Town
-#### Pokemon Tower
+#### Pokemon Tower 1
+nothing
+
+#### Pokemon Tower 2
+nothing
+
+#### Pokemon Tower 3
+Gastly
+Gastly
+Gastly
+Gastly
+Gastly
+Gastly
+Gastly
+Gastly
+Gastly
+Haunter
+Haunter
+
+#### Pokemon Tower 4
+Gastly
+Gastly
+Gastly
+Gastly
+Gastly
+Gastly
+Gastly
+Gastly
+Gastly
+Haunter
+Haunter
+
+#### Pokemon Tower 5
+Gastly
+Gastly
+Gastly
+Gastly
+Gastly
+Gastly
+Gastly
+Cubone
+Cubone
+Haunter
+Haunter
+
+#### Pokemon Tower 6
+Gastly
+Gastly
+Gastly
+Gastly
+Gastly
+Cubone
+Cubone
+Grimer
+Haunter
+Haunter
+
+#### Pokemon Tower 7
+Gastly
+Gastly
+Gastly
+Gastly
+Cubone
+Cubone
+Grimer
+Haunter
+Haunter
+Ditto
+
+#### Route 10
+???
+
+[Water]
+Gyarados, Magikarp
+Kingler, Krabby
+Poliwrath, Poliwhirl, Poliwag
+Blastoise, Wartortle, Squirtle
+Tentacruel, Tentacool
+
 #### Route 12
+Scyther
+Scyther
+Vulpix
+Growlithe
+Doduo
+Scyther
+Scyther
+Vulpix
+Growlithe
+Dodrio
+
 #### Route 8
+Pinsir
+Scyther
+Koffing
+Ekans
+Pinsir
+Scyther
+Koffing
+Ekans
+Tangela
+Gloom
+
 #### Route 7
+Drowzee
+Meowth
+Kangaskhan
+Pinsir
+Scyther
+Koffing
+Ekans
+Drowzee
+Meowth
+Kangaskhan
+
 #### Celadon City [Erika]
 #### Saffron City [Sabrina] [Blackbelt]
+[Fixed]
+Snorlax
+Vaporeon, Jolteon, Flareon, Eevee
+
+[Game Corner]
+Hitmonlee
+Hitmonchan
+Porygon
+
 #### Route 13
+Rhyhorn
+Bellsprout
+Meowth
+Bellsprout
+Meowth
+Kangaskhan
+Scyther
+Dodrio
+Weepinbell
+Weepinbell
+
 #### Route 14
+Bulbasaur
+Bulbasaur
+Rhyhorn
+Bellsprout
+Meowth
+Kangaskhan
+Persian
+Persian
+Weepinbell
+Ivysaur
+
 #### Route 15
+Tauros
+Chansey
+Ivysaur
+Rhyhorn
+Tauros
+Chansey
+Weepinbell
+Persian
+Weepinbell
+Rhyhorn
+
 #### Route 16
+Exeggcute
+Bulbasaur
+Bellsprout
+Exeggcute
+Persian
+Kangaskhan
+Ivysaur
+Exeggcute
+Ivysaur
+Weepinbell
+
 #### Route 17
+Abra
+Abra
+Exeggcute
+Exeggcute
+Abra
+Abra
+Kadabra
+Kadabra
+Exeggcute
+Kadabra
+
+[Water]
+Slowbro, Slowpoke
+Gyarados, Magikarp
+Kingler, Krabby
+Poliwrath, Poliwhirl, Poliwag
+
 #### Route 18
+Abra
+Exeggcute
+Ivysaur
+Weepinbell
+Kadabra
+Tauros
+Chansey
+Ivysaur
+Rhyhorn
+Persian
+
+#### Safari Zone 0
+Rattata
+Meowth
+Sandshrew
+Machop
+Ekans
+Lickitung
+Bellsprout
+Bellsprout
+Lickitung
+Arbok
+
+#### Safari Zone 1
+[Water]
+Dragonite, Dragonair, Dratini
+Gyarados, Magikarp
+Lapras
+Kingler, Krabby
+
+Raticate
+Persian
+Sandslash
+Machoke
+Arbok
+Lickitung
+Weepinbell
+Pinsir
+Jynx
+Ivysaur
+
+#### Safari Zone 2
+Pinsir
+Jynx
+Ivysaur
+Charmander
+Doduo
+Pikachu
+Drowzee
+Kangaskhan
+Dodrio
+Raichu
+
+#### Safari Zone 3
+[Water]
+Cloyster, Shellder
+Starmie, Staryu
+Poliwrath, Poliwhirl, Poliwag
+Slowbro, Slowpoke
+
+Rhyhorn
+Exeggcute
+Abra
+Kadabra
+Snorlax
+Chansey
+Tauros
+Snorlax
+Chansey
+Tauros
+
 #### Fuchsia City [Koga]
-#### Safari Zone
+
 #### Power Plant
+Magnemite
+Voltorb
+Pikachu
+Electabuzz
+Koffing
+Grimer
+Magneton
+Electrode
+Raichu
+Muk
+
+[Fixed]
+Zapdos
+
 #### Route 19
+[Water]
+Cloyster, Shellder
+Starmie, Staryu
+Dragonite, Dragonair, Dratini
+
 #### Seafoam Islands
+Golem, Graveler, Geodude
+Onix
+Golbat, Zubat
+Lickitung
+Ditto
+Dugtrio, Diglett
+Sandslash, Sandshrew
+Golem, Graveler, Geodude
+Onix
+Golbat, Zubat
+
+[Fixed]
+Articuno
+
 #### Route 20
-#### Cinnabar Island
 #### Pokemon Mansion
+Charizard, Charmeleon, Charmander
+Magmar
+Ninetales, Vulpix
+Arcanine, Growlithe
+Weezing, Koffing
+Muk, Grimer
+Charizard, Charmeleon, Charmander
+Magmar
+Ninetales, Vulpix
+Arcanine, Growlithe
+
+#### Cinnabar Island [Blaine]
+[Fixed]
+Aerodactyl
+Kabutops, Kabuto
+Omastar, Omanyte
+
+[Traded]
+Rhydon
+Muk
+Dewgong
+
 #### Route 21
 #### Route 23
 #### Victory Road
+[Fixed]
+Moltres
+
+#### Cerulean Cave
+[Fixed]
+Mewtwo
 
 --------------------------------------------------------------------------------
 ## Suggested TM Mart Locations
