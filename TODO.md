@@ -4,17 +4,17 @@
 
 ### Quality if life:
 - [ ] Speed
-        - [ ] FLY
-        - [ ] HP bars
-        - [ ] RockSlide
-        - [ ] BattleFadeOut
-        - [ ] TrainerWin/Lose
-        - [ ] TextInit
-        - [ ] PokeCenter
-        - [ ] Save
-        - [ ] Access PCs
-        - [ ] Test Link & Trade
-        - [ ] Follow speed
+    - [ ] FLY
+    - [ ] HP bars
+    - [ ] RockSlide
+    - [ ] BattleFadeOut
+    - [ ] TrainerWin/Lose
+    - [ ] TextInit
+    - [ ] PokeCenter
+    - [ ] Save
+    - [ ] Access PCs
+    - [ ] Test Link & Trade
+    - [ ] Follow speed
 - [ ] Remove badge requirements from HMs
 
 ### Make it harder:
