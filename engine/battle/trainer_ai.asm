@@ -156,9 +156,6 @@ StatusAilmentMoveEffects:
 ; in particular, stat-modifying moves and other move effects
 ; that fall in-between
 AIMoveChoiceModification2:
-	ld a, [wAILayer2Encouragement]
-	cp $1
-	ret nz
 	ld hl, wBuffer - 1 ; temp move selection array (-1 byte offset)
 	ld de, wEnemyMonMoves ; enemy moves
 	ld b, NUM_MOVES + 1
@@ -173,16 +170,24 @@ AIMoveChoiceModification2:
 	call ReadMove
 	ld a, [wEnemyMoveEffect]
 	cp ATTACK_UP1_EFFECT
-	jr c, .nextMove
+	jr z, .nextMove
 	cp BIDE_EFFECT
-	jr c, .preferMove
+	jr z, .preferMove
 	cp ATTACK_UP2_EFFECT
-	jr c, .nextMove
+	jr z, .nextMove
 	cp POISON_EFFECT
-	jr c, .preferMove
+	jr z, .preferMove
+	cp PARALYZE_EFFECT
+	jr z, .preferMove2
+	cp SLEEP_EFFECT
+	jr z, .preferMove2
 	jr .nextMove
 .preferMove
 	dec [hl] ; slightly encourage this move
+	jr .nextMove
+.preferMove2
+	dec [hl] ; encourage this move
+	dec [hl] ; encourage this move
 	jr .nextMove
 
 ; encourages moves that are effective against the player's mon (even if non-damaging).
@@ -208,53 +213,64 @@ AIMoveChoiceModification3:
 	pop de
 	pop bc
 	pop hl
+; Discourage healing moves if at full HP	
+	ld a, [wEnemyMoveEffect]
+	cp HEAL_EFFECT
+	jr nz, .notHealing
+	push bc
+	push de
+; Division by 3
+	xor a
+	ldh [hDividend], a
+	ldh [hDividend + 1], a
+	ld a, [wEnemyMonMaxHP]
+	ldh [hDividend + 2], a
+	ld a, [wEnemyMonMaxHP + 1]
+	ldh [hDividend + 3], a
+	ld a, 3
+	ldh [hDivisor], a
+	ld b, 4
+	call Divide
+; Compare results
+	ld a, [wEnemyMonHP]
+	ld d, a
+	ld a, [wEnemyMonHP + 1]
+	ld e, a
+	ldh a, [hQuotient + 2]
+	cp d
+	jr c, .discourageMove			; current HP is more than 1/3 of total
+	jr nz, .encourageMove			; current HP is less than 1/3 of total
+	ldh a, [hQuotient + 3]
+	cp e
+	jr c, .discourageMove			; current HP is more than 1/3 of total
+.encourageMove
+	pop de
+	pop bc
+	dec [hl] 						; encourage this move
+	dec [hl] 						; encourage this move
+	dec [hl] 						; encourage this move
+	dec [hl] 						; encourage this move
+	jr .nextMove
+.discourageMove
+	pop de
+	pop bc
+	ld a, [hl]
+	add $4 ; heavily discourage move
+	ld [hl], a
+	jr .notEffectiveMove
+.notHealing
 	ld a, [wTypeEffectiveness]
-	cp $10
+	cp 10
 	jr z, .nextMove
 	jr c, .notEffectiveMove
 	dec [hl] ; slightly encourage this move
+	cp 20
+	jr nz, .nextMove
+	dec [hl] ; encourage more if super effective
 	jr .nextMove
-.notEffectiveMove ; discourages non-effective moves if better moves are available
-	push hl
-	push de
-	push bc
-	ld a, [wEnemyMoveType]
-	ld d, a
-	ld hl, wEnemyMonMoves  ; enemy moves
-	ld b, NUM_MOVES + 1
-	ld c, $0
-.loopMoves
-	dec b
-	jr z, .done
-	ld a, [hli]
-	and a
-	jr z, .done
-	call ReadMove
-	ld a, [wEnemyMoveEffect]
-	cp SUPER_FANG_EFFECT
-	jr z, .betterMoveFound ; Super Fang is considered to be a better move
-	cp SPECIAL_DAMAGE_EFFECT
-	jr z, .betterMoveFound ; any special damage moves are considered to be better moves
-	cp FLY_EFFECT
-	jr z, .betterMoveFound ; Fly is considered to be a better move
-	ld a, [wEnemyMoveType]
-	cp d
-	jr z, .loopMoves
-	ld a, [wEnemyMovePower]
-	and a
-	jr nz, .betterMoveFound ; damaging moves of a different type are considered to be better moves
-	jr .loopMoves
-.betterMoveFound
-	ld c, a
-.done
-	ld a, c
-	pop bc
-	pop de
-	pop hl
-	and a
-	jr z, .nextMove
+.notEffectiveMove
 	inc [hl] ; slightly discourage this move
-	jr .nextMove
+	jp .nextMove
 AIMoveChoiceModification4:
 	ret
 

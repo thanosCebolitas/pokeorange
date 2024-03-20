@@ -786,27 +786,58 @@ SelectAction::
 	- If not, go on
 - Pick move that does most dmg 							[PickMoveThatDoesMostDMG]
 
+-4 Healing if about to Die
++5 Healing if not about to Die
+-2 PRZ/SLP
+-1 PSN
++5 non-volatile Status if enemy has any
+?? Volatile
+?? Stat improv
++1 if effective
 
-IsPKMNGoodEnough::
+?? Lvl dmg should be no type
+?? Dig/Fly
+?? SuperFang
 
-IsThereABetterPKMNMatch::
 
-IsPKMNAboutToDie::
-
-HasHealingMove::
-
-EnemyHasNonVolatileStatus::
-
-HasStatusInflictingMove::
-
-CanApplyVolitileStatus::
-
-ShouldImproveDefence::
-
-PKMNPlaysFirst::
-
-WillAMoveKO::
-
-HasFlyOrDig::
-
-PickMoveThatDoesMostDMG::
+.notEffectiveMove ; discourages non-effective moves if better moves are available
+	push hl
+	push de
+	push bc
+	ld a, [wEnemyMoveType]
+	ld d, a
+	ld hl, wEnemyMonMoves  ; enemy moves
+	ld b, NUM_MOVES + 1
+	ld c, $0
+; JUST DISCOURAGE THE MOVE	
+	jr .done
+.loopMoves
+	dec b
+	jr z, .done
+	ld a, [hli]
+	and a
+	jr z, .done
+	call ReadMove
+	ld a, [wEnemyMoveEffect]
+	cp SUPER_FANG_EFFECT
+	jr z, .betterMoveFound ; Super Fang is considered to be a better move
+	cp SPECIAL_DAMAGE_EFFECT
+	jr z, .betterMoveFound ; any special damage moves are considered to be better moves
+	cp FLY_EFFECT
+	jr z, .betterMoveFound ; Fly is considered to be a better move
+	ld a, [wEnemyMoveType]
+	cp d
+	jr z, .loopMoves
+	ld a, [wEnemyMovePower]
+	and a
+	jr nz, .betterMoveFound ; damaging moves of a different type are considered to be better moves
+	jr .loopMoves
+.betterMoveFound
+	ld c, a
+.done
+	ld a, c
+	pop bc
+	pop de
+	pop hl
+;	and a
+;	jr z, .nextMove

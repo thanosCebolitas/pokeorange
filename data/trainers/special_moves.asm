@@ -76,8 +76,14 @@ SpecialTrainerMoves:
 	db 0
 
 	db LORELEI, 1
-	db 1, 1, BUBBLEBEAM
-	db 2, 3, ICE_BEAM
+	db 1, 1, PSYCHIC_M
+	db 1, 2, SEISMIC_TOSS
+	db 1, 3, THUNDER_WAVE
+	db 1, 4, RECOVER
+	db 2, 1, PSYCHIC_M
+	db 2, 2, SEISMIC_TOSS
+	db 2, 3, THUNDER_WAVE
+	db 2, 4, RECOVER
 	db 3, 1, PSYCHIC_M
 	db 3, 2, SURF
 	db 4, 3, LOVELY_KISS
