@@ -76,18 +76,35 @@ SpecialTrainerMoves:
 	db 0
 
 	db LORELEI, 1
-	db 1, 1, PSYCHIC_M
-	db 1, 2, SEISMIC_TOSS
-	db 1, 3, THUNDER_WAVE
-	db 1, 4, RECOVER
-	db 2, 1, PSYCHIC_M
-	db 2, 2, SEISMIC_TOSS
-	db 2, 3, THUNDER_WAVE
-	db 2, 4, RECOVER
-	db 3, 1, PSYCHIC_M
-	db 3, 2, SURF
-	db 4, 3, LOVELY_KISS
-	db 5, 3, BLIZZARD
+	db 1, 1, LOVELY_KISS
+	db 1, 2, BLIZZARD
+	db 1, 3, PSYCHIC_M
+	db 1, 4, REST
+
+	db 2, 1, CLAMP
+	db 2, 2, BLIZZARD
+	db 2, 3, REST
+	db 2, 4, TOXIC
+
+	db 3, 1, THUNDERBOLT
+	db 3, 2, ICE_BEAM
+	db 3, 3, SOFTBOILED
+	db 3, 4, THUNDER_WAVE
+
+	db 4, 1, BODY_SLAM
+	db 4, 2, HYPER_BEAM
+	db 4, 3, BLIZZARD
+	db 4, 4, EARTHQUAKE
+
+	db 5, 1, BLIZZARD
+	db 5, 2, THUNDERBOLT
+	db 5, 3, BODY_SLAM
+	db 5, 4, CONFUSE_RAY
+
+	db 6, 1, BLIZZARD
+	db 6, 2, FLY
+	db 6, 3, REST
+	db 6, 4, HYPER_BEAM
 	db 0
 
 	db BRUNO, 1

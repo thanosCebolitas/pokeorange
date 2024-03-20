@@ -8,8 +8,7 @@
 ONIX, HITMONCHAN, HITMONLEE, ONIX, MACHAMP
 
 #### LoreleiData:
-DEWGONG, CLOYSTER, SLOWBRO, JYNX, LAPRAS
--> Jynx, Lapras, Cloyster, Articuno
+JYNX, CLOYSTER, CHANSEY, TAUROS, LAPRAS, ARTICUNO
 
 #### AgathaData:
 GENGAR, GOLBAT, HAUNTER, ARBOK, GENGAR
@@ -791,10 +790,11 @@ SelectAction::
 -2 PRZ/SLP
 -1 PSN
 +5 non-volatile Status if enemy has any
-?? Volatile
-?? Stat improv
 +1 if effective
 
+?? Volatile
+?? Stat improv
+?? STAB
 ?? Lvl dmg should be no type
 ?? Dig/Fly
 ?? SuperFang

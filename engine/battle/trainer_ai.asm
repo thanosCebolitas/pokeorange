@@ -181,6 +181,13 @@ AIMoveChoiceModification2:
 	jr z, .preferMove2
 	cp SLEEP_EFFECT
 	jr z, .preferMove2
+; Confusion is last since it needs somewhat special handling
+	cp CONFUSION_EFFECT
+	jr nz, .nextMove
+	ld a, [wPlayerBattleStatus1]
+	bit 7, a
+	jr z, .preferMove2
+	inc [hl] ; slightly discourage this move
 	jr .nextMove
 .preferMove
 	dec [hl] ; slightly encourage this move
