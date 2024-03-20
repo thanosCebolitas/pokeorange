@@ -274,8 +274,39 @@ AIMoveChoiceModification3:
 .notEffectiveMove
 	inc [hl] ; slightly discourage this move
 	jp .nextMove
+
 AIMoveChoiceModification4:
-	ret
+	ld hl, wBuffer - 1 ; temp move selection array (-1 byte offset)
+	ld de, wEnemyMonMoves ; enemy moves
+	ld b, NUM_MOVES + 1
+.nextMove
+	dec b
+	ret z ; processed all 4 moves
+	inc hl
+	ld a, [de]
+	and a
+	ret z ; no more moves in move set
+	inc de
+	call ReadMove
+	ld a, [wEnemyMoveEffect]
+	cp PARALYZE_EFFECT
+	jr z, .preferMove2
+	cp SLEEP_EFFECT
+	jr z, .preferMove2
+	cp CONFUSION_EFFECT
+	jr nz, .nextMove
+	ld a, [wPlayerBattleStatus1]
+	bit 7, a
+	jr z, .preferMove2
+	inc [hl] ; slightly discourage this move
+	jr .nextMove
+.preferMove
+	dec [hl] ; slightly encourage this move
+	jr .nextMove
+.preferMove2
+	dec [hl] ; encourage this move
+	dec [hl] ; encourage this move
+	jr .nextMove
 
 ReadMove:
 	push hl
