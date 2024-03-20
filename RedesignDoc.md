@@ -751,53 +751,77 @@ Mewtwo
 --------------------------------------------------------------------------------
 
 SelectAction::
-- Is this pkmn good enough? 							[IsPKMNGoodEnough]
-	- If not, is there a better choice?					[IsThereABetterPKMNMatch]
+- Is this pkmn good enough?
+	- If not, is there a better choice?
 		- If not, jmp to PickAMove
 		- If yes, switch to that
 	- If yes, go on
-.PickAMove
-- Are we about to die?									[IsPKMNAboutToDie]
-	- If so, do we have a healing move?					[HasHealingMove]
-		- If yes, do that
-		- If not, go on
-- Has enemy any non-volatile statuses?					[EnemyHasNonVolatileStatus]
-	- If yes, jmp to .shouldApplyVolatileStatus
-	- If not, do we have a status inflicting move?		[HasStatusInflictingMove]
-		- If yes, do that
-		- If not, go on
-.shouldApplyVolatileStatus
-- Can we apply volitile status?							[CanApplyVolitileStatus]
-	- If yes, do that
-	- If not, go on
-.shouldImproveDefence
-- Can we improve defense meaningfully?					[ShouldImproveDefence]
-	- If yes, do that
-	- If no, go on
-.DoDMG
-- Do we play first?										[PKMNPlaysFirst]
-	- If yes, will any move KO most probably?			[WillAMoveKO]
-		- If yes, do that
-		- If not, go on
-	- If not, go on
-- Do we have fly or dig?								[HasFlyOrDig]
-	- If yes, do that
-	- If not, go on
-- Pick move that does most dmg 							[PickMoveThatDoesMostDMG]
 
+.PickAMove
+- Loop opponent moves and find the one with max dmg,
+store it's category SPCL/PHYS as wEnemyMoveCategory
+and hits needed to KO on avg as wRemainingMoves
+- If we play second dec [wRemainingMoves]
+
+[Note: we always increase, encouraging means we increase less]
+
+- Loop available moves
+	- Is wRemainingMoves <= 2
+		- If so, is this a healing move?
+			- If yes, encourage it 						-5
+			- If not, discourage it 					+2
+	- Has enemy any non-volatile statuses?
+		- If yes, is this a status inflicting move?
+			- If yes, discourage it 					+5
+			- If not, go on
+		- If not, is this a status inflicting move?
+			- If PRZ/SLP, encourage it 					-2
+			- If BIDE, PSN, encourage it				-1
+			- If not, go on
+	- Will this move apply volatile status?
+		- If CSN, encourage it 							-2
+		- If CSN, but opponent already CSN discourage   +1
+		- If not, go on
+	- Will this move improve defense meaningfully?
+		(aka does the move improve defense against wEnemyMoveCategory)
+		- If yes, is (wRemainingMoves >= 3 && hasHealingMove) || HP >= 90% 
+			- If yes, encourage it						-1?
+			- If not, go on
+		- If not, go on
+	- Will this improve attack && wRemainingMoves >= 3 && hasHealingMove?
+		- If yes, encourage it 							-1?
+		- If not, go on
+	- Will the current move KO most probably?
+		- If yes, are we gonna die because of it?
+			- If yes, do we have < 1/2 HP?
+				- If yes, encourage it 					-4?
+				- If no, encourage it 					-2?
+		- If not, encourage it 							-5?
+	- Is this move fly or dig?
+		- If yes, encourage it 							-5?
+		- If not, go on
+	- Calculate wEnemyRemainingMoves for this move and inc [hl] by that amount
+
+
+--------------------------------------------------------------------------------
 -4 Healing if about to Die
 +5 Healing if not about to Die
+
 -2 PRZ/SLP
 -1 PSN
+-2 CFSN if not already
++1 CFSN if already
 +5 non-volatile Status if enemy has any
-+1 if effective
+
+??-1 if STAB
+??-2 if effective
+??-3 if super effective
+??-1 Dig/Fly
+??-1 SuperFang
 
 ?? Volatile
 ?? Stat improv
-?? STAB
 ?? Lvl dmg should be no type
-?? Dig/Fly
-?? SuperFang
 
 
 .notEffectiveMove ; discourages non-effective moves if better moves are available
@@ -841,3 +865,25 @@ SelectAction::
 	pop hl
 ;	and a
 ;	jr z, .nextMove
+
+
+
+EnemyCalcMoveDamage:
+	call SwapPlayerAndEnemyLevels
+	ld a, [wEnemyMoveEffect]
+	ld hl, SetDamageEffects
+	ld de, $1
+	call IsInArray
+	jp c, EnemyMoveHitTest
+	call CriticalHitTest
+	call HandleCounterMove
+	jr z, handleIfEnemyMoveMissed
+	call SwapPlayerAndEnemyLevels
+	call GetDamageVarsForEnemyAttack
+	call SwapPlayerAndEnemyLevels
+	call CalculateDamage
+	jp z, EnemyCheckIfFlyOrChargeEffect
+	call AdjustDamageForMoveType
+	call RandomizeDamage
+
+

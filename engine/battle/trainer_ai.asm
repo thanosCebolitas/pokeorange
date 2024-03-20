@@ -1,7 +1,7 @@
 ; creates a set of moves that may be used and returns its address in hl
 ; unused slots are filled with 0, all used slots may be chosen with equal probability
 AIEnemyTrainerChooseMoves:
-	ld a, $a
+	ld a, 10
 	ld hl, wBuffer ; init temporary move selection array. Only the moves with the lowest numbers are chosen in the end
 	ld [hli], a   ; move 1
 	ld [hli], a   ; move 2
@@ -16,7 +16,7 @@ AIEnemyTrainerChooseMoves:
 	ld c, a
 	ld b, $0
 	add hl, bc    ; advance pointer to forbidden move
-	ld [hl], $50  ; forbid (highly discourage) disabled move
+	ld [hl], 50  ; forbid (highly discourage) disabled move
 .noMoveDisabled
 	ld hl, TrainerClassMoveChoiceModifications
 	ld a, [wTrainerClass]
@@ -56,36 +56,32 @@ AIEnemyTrainerChooseMoves:
 	ld hl, wBuffer  ; temp move selection array
 	ld de, wEnemyMonMoves  ; enemy moves
 	ld c, NUM_MOVES
+	ld b, $ff						; store minimum value at b
 .loopDecrementEntries
 	ld a, [de]
 	inc de
 	and a
-	jr z, .loopFindMinimumEntries
-	dec [hl]
-	jr z, .minimumEntriesFound
+	jr z, .alreadyLess				; end of wEnemyMonMoves array
+	ld a, [hl]
+	cp b 							; a - b
+	jr nc, .alreadyLess				; if a >= b check next entry
+	ld b, a 						; if a <  b store new min
+.alreadyLess
 	inc hl
 	dec c
-	jr z, .loopFindMinimumEntries
-	jr .loopDecrementEntries
-.minimumEntriesFound
-	ld a, c
-.loopUndoPartialIteration ; undo last (partial) loop iteration
-	inc [hl]
-	dec hl
-	inc a
-	cp NUM_MOVES + 1
-	jr nz, .loopUndoPartialIteration
+	jr nz, .loopDecrementEntries	; loop moves
+.minimumEntriesFound				; b has the minimum value
 	ld hl, wBuffer  ; temp move selection array
 	ld de, wEnemyMonMoves  ; enemy moves
 	ld c, NUM_MOVES
-.filterMinimalEntries ; all minimal entries now have value 1. All other slots will be disabled (move set to 0)
+.filterMinimalEntries
 	ld a, [de]
 	and a
 	jr nz, .moveExisting
 	ld [hl], a
 .moveExisting
 	ld a, [hl]
-	dec a
+	cp b
 	jr z, .slotWithMinimalValue
 	xor a
 	ld [hli], a     ; disable move slot
@@ -273,7 +269,7 @@ AIMoveChoiceModification3:
 	dec [hl] ; slightly encourage this move
 	cp 20
 	jr nz, .nextMove
-	dec [hl] ; encourage more if super effective
+;	dec [hl] ; encourage more if super effective
 	jr .nextMove
 .notEffectiveMove
 	inc [hl] ; slightly discourage this move
