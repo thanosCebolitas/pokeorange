@@ -53,6 +53,7 @@
 - [ ] Permanent CUT trees
 - [ ] Surf minigame
 - [ ] In-game traded should have max stat exp
+- [ ] Multiple attack re-rolls
 
 --------------------------------------------------------------------------------
 

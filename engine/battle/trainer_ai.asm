@@ -276,11 +276,40 @@ AIMoveChoiceModification3:
 	jp .nextMove
 
 AIMoveChoiceModification4:
+;-------------------------------------------------------------------------------
+; wBuffer usage:
+; bytes [ 0: 3] 	final move score (lower is better)
+; byte       4  	opponent best move max dmg
+; byte       5   	opponent best move category
+; bytes [ 6:13]  	our move avg dmg
+; bytes [14:21]  	opponent best move dmg as modified by our moveset
+; bytes [22:25]     remaining moves
+; bytes [26:29]     opponent remaining moves
+;
+; Function summary:
+; - Loop 1:
+; 	- Compute & store opponent best move max dmg & category
+; - Loop 2:
+; 	- Compute & store our moves avg dmg
+; - Loop 3:
+; 	- Compute opponent modified best move dmg (ie apply volatile statuses)
+; 	- Update our moves avg dmg to account for volatile statuses
+; - Loop 4:
+; 	- Compute remaining moves
+; 	- Compute opponent remaining moves
+; - Loop 5:
+; 	- Update remaining moves to account for healing, paralyze, sleep & confusion
+; 	- Update opponent remaining moves to account for confusion
+; - Loop 6:
+; 	- Compute final score as (opponent remaining moves) - (remaining moves)
+;-------------------------------------------------------------------------------
 	ld hl, wBuffer - 1 ; temp move selection array (-1 byte offset)
 	ld de, wEnemyMonMoves ; enemy moves
-	ld b, NUM_MOVES + 1
+	ld b, -1
 .nextMove
-	dec b
+	inc b
+	ld a, b
+	cp NUM_MOVES
 	ret z ; processed all 4 moves
 	inc hl
 	ld a, [de]
@@ -288,25 +317,149 @@ AIMoveChoiceModification4:
 	ret z ; no more moves in move set
 	inc de
 	call ReadMove
-	ld a, [wEnemyMoveEffect]
-	cp PARALYZE_EFFECT
-	jr z, .preferMove2
-	cp SLEEP_EFFECT
-	jr z, .preferMove2
-	cp CONFUSION_EFFECT
-	jr nz, .nextMove
-	ld a, [wPlayerBattleStatus1]
-	bit 7, a
-	jr z, .preferMove2
-	inc [hl] ; slightly discourage this move
-	jr .nextMove
-.preferMove
-	dec [hl] ; slightly encourage this move
-	jr .nextMove
-.preferMove2
-	dec [hl] ; encourage this move
-	dec [hl] ; encourage this move
-	jr .nextMove
+;--------------------------------------------------
+; Calculate score
+;--------------------------------------------------
+	push bc
+	push de
+	push hl
+
+	; TODO: Handle super fang & psybeam
+	; ld a, [wEnemyMoveEffect]
+	; TODO: Handle accuracy
+	; TODO: Handle critical
+	; TODO: Handle counter
+	; TODO: Handle bide
+	; TODO: Handle clamp/wrap
+	; TODO: Handle multiple attacks (eg. double kick)
+	; TODO: Handle clamp/wrap
+	; TODO: Handle charging moves
+	; TODO: Handle enemy fly/dig
+
+; Store hWhoseTurn on stack and set to AI
+	ldh a, [hWhoseTurn]
+	push af
+	ld a, 1
+	ldh [hWhoseTurn], a
+
+	ld a, b
+	ld [wEnemySelectedMove], a
+	callfar GetDamageVarsForEnemyAttack
+	;callfar SwapPlayerAndEnemyLevels
+	callfar CalculateDamage
+	callfar AdjustDamageForMoveType
+	;callfar SwapPlayerAndEnemyLevels
+
+; Restore hWhoseTurn
+	pop af
+
+	pop hl
+	pop de
+	pop bc
+
+	push bc
+	push de
+	push hl
+
+;--------------------------------------------------
+; Compute Opponnent Remaining Rounds
+; [hl] = min(ceil(wBattleMonHP / wDamage), 127)
+;--------------------------------------------------
+; If wDamage == 0 skip to .clamp
+	ld a, [wDamage]
+	ld b, a
+	ld a, [wDamage + 1]
+	or b
+	jr z, .clamp
+; Now we can compute remaining rounds
+	ld a, [wDamage]
+	and a
+; If wDamage <= 255 do a division
+; If wDamage > 255 it's faster to just substract
+	jr nz, .justDoLoopedSubstraction
+; Read opponent HP
+	xor a
+	ldh [hDividend], a
+	ldh [hDividend + 1], a
+	ld a, [wBattleMonMaxHP]
+	ldh [hDividend + 2], a
+	ld a, [wBattleMonMaxHP + 1]
+	ldh [hDividend + 3], a
+; Read move dmg	
+	ld a, [wDamage + 1]
+	ldh [hDivisor], a
+	ld b, 4
+	call Divide
+; Result on bc
+	ldh a, [hQuotient + 2]
+	ld b, a
+	ldh a, [hQuotient + 3]
+	ld c, a
+; Does ceil modify results after division?
+	ld a, [hRemainder]
+	and a
+	jr z, .shouldClamp
+	inc bc
+	jr .shouldClamp
+
+.justDoLoopedSubstraction
+; Note: This works because the quotient fits in a single byte (h)
+;	  	when DMG > 255 (max HP is <= 2 ** 16 - 1, practically less than 1000)
+; Load HP -> de, DMG -> bc, quotient in h
+	ld a, [wBattleMonMaxHP]
+	ld d, a
+	ld a, [wBattleMonMaxHP + 1]
+	ld e, a
+	ld a, [wDamage]
+	ld b, a
+	ld a, [wDamage + 1]
+	ld c, a
+	ld h, 0
+
+.loop
+; Loop until de < bc
+; Note: will overestimate ceil(wBattleMonHP / wDamage)
+;       when bc divides de exactly, but we'll live with it
+;       it's too much effort to do this right for an heuristic score
+;		which depends on a badly written RNG
+	inc h
+	ld a, e
+	sub c
+	ld e, a
+	ld a, d
+	sbc b
+	ld d, a
+	jr c, .subDone
+	jr .loop
+.subDone
+	ld b, 0
+	ld c, h
+.shouldClamp
+	ld a, b
+	and a
+	jr nz, .clamp
+	ld a, c
+	cp 127					  ; Clamp at 127
+	jr c, .noClamp
+.clamp
+	ld a, 127
+.noClamp
+
+;--------------------------------------------------
+; End Compute Opponnent Remaining Rounds
+;--------------------------------------------------
+
+	pop hl
+	pop de
+	pop bc
+
+;--------------------------------------------------
+; End Calculate Score
+;--------------------------------------------------
+
+; Store Score
+	ld [hl], a
+	jp .nextMove
 
 ReadMove:
 	push hl
