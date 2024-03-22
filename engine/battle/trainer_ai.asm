@@ -326,8 +326,7 @@ AIMoveChoiceModification4:
 
 	; TODO: Handle super fang & psybeam
 	; ld a, [wEnemyMoveEffect]
-	; TODO: Handle accuracy
-	; TODO: Handle critical
+	; TODO: Handle high critical moves
 	; TODO: Handle counter
 	; TODO: Handle bide
 	; TODO: Handle clamp/wrap
@@ -336,12 +335,15 @@ AIMoveChoiceModification4:
 	; TODO: Handle charging moves
 	; TODO: Handle enemy fly/dig
 
+;-----------------------------
 ; Store hWhoseTurn on stack and set to AI
 	ldh a, [hWhoseTurn]
 	push af
 	ld a, 1
 	ldh [hWhoseTurn], a
 
+;-----------------------------
+; Base dmg calculation
 	ld a, b
 	ld [wEnemySelectedMove], a
 	callfar GetDamageVarsForEnemyAttack
@@ -350,8 +352,47 @@ AIMoveChoiceModification4:
 	callfar AdjustDamageForMoveType
 	;callfar SwapPlayerAndEnemyLevels
 
+;-----------------------------
 ; Restore hWhoseTurn
 	pop af
+	ldh [hWhoseTurn], a
+
+;-----------------------------
+; Correct for minimum damage
+; AI doesn't like taking risks : )
+; multiply by 217
+	xor a
+	ldh [hMultiplicand], a
+	ld a, [wDamage]
+	ldh [hMultiplicand + 1], a
+	ld a, [wDamage + 1]
+	ldh [hMultiplicand + 2], a
+	ld a, 217
+	ldh [hMultiplier], a
+	call Multiply
+; divide by 255
+	ld a, 255
+	ldh [hDivisor], a
+	ld b, 4
+	call Divide
+
+;-----------------------------
+; Correct for move accuracy wEnemyMoveAccuracy
+	ld a, [wEnemyMoveAccuracy]
+	ldh [hMultiplier], a
+	call Multiply
+; divide by 100
+	ld a, 100
+	ldh [hDivisor], a
+	ld b, 4
+	call Divide
+
+;-----------------------------
+; Store back to wDamage
+	ldh a, [hQuotient + 2]
+	ld [wDamage], a
+	ldh a, [hQuotient + 3]
+	ld [wDamage + 1], a
 
 	pop hl
 	pop de
