@@ -277,6 +277,8 @@ AIMoveChoiceModification3:
 
 AIMoveChoiceModification4:
 ;-------------------------------------------------------------------------------
+; Note: Assumes we can freely use all registers
+;
 ; wBuffer usage:
 ; bytes [ 0: 3] 	final move score (lower is better)
 ; byte       4  	opponent best move max dmg
@@ -303,60 +305,125 @@ AIMoveChoiceModification4:
 ; - Loop 6:
 ; 	- Compute final score as (opponent remaining moves) - (remaining moves)
 ;-------------------------------------------------------------------------------
-	ld hl, wBuffer - 1 ; temp move selection array (-1 byte offset)
 	ld de, wEnemyMonMoves ; enemy moves
-	ld b, -1
+	ld c, -1
+	ld b, 0
 .nextMove
-	inc b
-	ld a, b
+	inc c
+	ld a, c
 	cp NUM_MOVES
 	ret z ; processed all 4 moves
-	inc hl
 	ld a, [de]
 	and a
 	ret z ; no more moves in move set
-	inc de
 	call ReadMove
+	inc de
 ;--------------------------------------------------
 ; Calculate score
 ;--------------------------------------------------
-	push bc
-	push de
-	push hl
-
 	; TODO: Handle super fang & psybeam
 	; ld a, [wEnemyMoveEffect]
-	; TODO: Handle high critical moves
 	; TODO: Handle counter
 	; TODO: Handle bide
 	; TODO: Handle clamp/wrap
 	; TODO: Handle multiple attacks (eg. double kick)
-	; TODO: Handle clamp/wrap
-	; TODO: Handle charging moves
-	; TODO: Handle enemy fly/dig
+	; TODO: Handle charging moves + fly/dig
+	; TODO: Handle recoil moves
+	; TODO: Handle self-destruct/explosion
 
+	; TODO: Handle healing moves
+	; TODO: Handle non-volatile status
+	; TODO: Handle volatile status
+	; TODO: Handle stat changes
+
+	call CalculateDamageAI
+	call CalculateRemainingRoundsAI
+
+; Store Score
+	ld [hl], a
+;--------------------------------------------------
+; End Calculate Score
+;--------------------------------------------------
+	jp .nextMove
+
+
+;--------------------------------------------------
+; Calculate Damage for AI purposes
+; Inputs: 
+;	d, the move id
+; Outputs: 
+;	wDamage
+;--------------------------------------------------
+CalculateDamageAI:
+;-----------------------------
+; Push registers to stack
+	push bc
+	push de
+	push hl
 ;-----------------------------
 ; Store hWhoseTurn on stack and set to AI
 	ldh a, [hWhoseTurn]
 	push af
 	ld a, 1
 	ldh [hWhoseTurn], a
-
 ;-----------------------------
 ; Base dmg calculation
 	ld a, b
 	ld [wEnemySelectedMove], a
+; Base dmg - no crit
+	ld a, 0
+	ld [wCriticalHitOrOHKO], a
 	callfar GetDamageVarsForEnemyAttack
-	;callfar SwapPlayerAndEnemyLevels
 	callfar CalculateDamage
 	callfar AdjustDamageForMoveType
-	;callfar SwapPlayerAndEnemyLevels
-
+	; CAREFULL WITH THAT AXE EUGENE
+	ld hl, SP +2 ; pushed de on stack ie. enemy move id
+	push hl
+	call WDamageWeightFactor
+; Reset registers; might not be needed
+	pop af
+	pop hl
+	pop de
+	pop bc
+	push bc
+	push de
+	push hl
+	push af
+; Store dmg on stack temporarily
+	ld a, [wDamage]
+	ld b, a
+	ld a, [wDamage + 1]
+	ld c, a
+	push bc
+; Compute critical hit dmg as well
+	ld a, 1
+	ld [wCriticalHitOrOHKO], a
+	callfar GetDamageVarsForEnemyAttack
+	callfar CalculateDamage
+	callfar AdjustDamageForMoveType
+; Update dmg accounting for crit rate
+; CAREFULL WITH THAT AXE EUGENE
+	ld hl, SP +4 ; pushed de on stack ie. enemy move id
+	push hl
+	call WDamageWeightFactor
+; Compute weighted sum
+; - weighted base dmg is on stack
+; - weighted crit dmg is on wDamage
+	ld a, [wDamage]
+	ld d, a
+	ld a, [wDamage + 1]
+	ld e, a
+	pop hl 		; hl: weighted base dmg
+	add hl, de
+; Store back to wDamage
+	ld a, h
+	ld [wDamage], a
+	ld a, l
+	ld [wDamage + 1], a
 ;-----------------------------
 ; Restore hWhoseTurn
 	pop af
 	ldh [hWhoseTurn], a
-
 ;-----------------------------
 ; Correct for minimum damage
 ; AI doesn't like taking risks : )
@@ -375,7 +442,6 @@ AIMoveChoiceModification4:
 	ldh [hDivisor], a
 	ld b, 4
 	call Divide
-
 ;-----------------------------
 ; Correct for move accuracy wEnemyMoveAccuracy
 	ld a, [wEnemyMoveAccuracy]
@@ -386,26 +452,119 @@ AIMoveChoiceModification4:
 	ldh [hDivisor], a
 	ld b, 4
 	call Divide
-
 ;-----------------------------
-; Store back to wDamage
+; Pop and push
+	pop hl
+	pop de
+	pop bc
+	push bc
+	push de
+	push hl
+;-----------------------------
+; Store to wBuffer + 2 * bc, wBuffer + 2 * bc + 1
+	ld hl, wBuffer
+	sla c
+	add hl, bc
+	ldh a, [hQuotient + 2]
+	ld [hli], a
+	ldh a, [hQuotient + 3]
+	ld [hl], a
+;-----------------------------
+; Pop and ret
+	pop hl
+	pop de
+	pop bc
+	ret
+
+;--------------------------------------------------
+; Update wDamage accounting for crit rate
+; Inputs: 
+;	the move id on stack
+;   wCriticalHitOrOHKO
+;	wDamage
+; Outputs:
+;   [if high crit move and computing crit]
+;	wDamage = wDamage * speed / 64
+;   [if non-high crit move and computing crit]
+;	wDamage = wDamage * speed / 512
+;   [if high crit move and computing normal hit]
+;	wDamage = wDamage * (512 - speed) / 64
+;   [if non-high crit move and computing normal hit]
+;	wDamage = wDamage * (512 - speed) / 512
+;--------------------------------------------------
+WDamageWeightFactor:
+; Account for crit rate
+	ld a, [wEnemyMonSpecies]
+	ld [wd0b5], a
+	callfar GetMonHeader
+; Move from wDamage to hMultiplicand
+	xor a
+	ldh [hMultiplicand], a
+	ld a, [wDamage]
+	ldh [hMultiplicand + 1], a
+	ld a, [wDamage + 1]
+	ldh [hMultiplicand + 2], a
+; crit dmg = wDamage * speed / 512
+; which will happen in steps
+; aka 
+	ld a, [wCriticalHitOrOHKO]
+	and a
+	jr nz, .notCrit
+	ld a, [wMonHBaseSpeed]
+	srl a 					; speed / 2
+	jr .goOn
+.notCrit
+	cpl 					; 255 - a
+.goOn
+	ldh [hMultiplier], a
+	call Multiply
+; divide by 512 (or by 64 if it's a high crit move)
+; CAREFULL WITH THAT AXE EUGENE
+	pop hl
+	ld a, l
+	cp KARATE_CHOP
+	jr z, .highCrit
+	cp RAZOR_LEAF
+	jr z, .highCrit
+	cp CRABHAMMER
+	jr z, .highCrit
+	cp SLASH
+	jr z, .highCrit
+	ld a, 255 				; should be 256, but it's ok
+	jr .noHighCrit
+.highCrit
+	ld a, 32
+.noHighCrit
+; Divide by 255 or 32
+	ldh [hDivisor], a
+	ld b, 4
+	call Divide
+; Move result back to wDamage
 	ldh a, [hQuotient + 2]
 	ld [wDamage], a
 	ldh a, [hQuotient + 3]
 	ld [wDamage + 1], a
-
-	pop hl
-	pop de
-	pop bc
-
-	push bc
-	push de
-	push hl
+	ret
 
 ;--------------------------------------------------
 ; Compute Opponnent Remaining Rounds
-; [hl] = min(ceil(wBattleMonHP / wDamage), 127)
+; Inputs:
+; 	wBuffer + 2 * bc, wBuffer + 2 * bc + 1 (Damage)
+; Output:
+; 	a = min(ceil(wBattleMonHP / wDamage), 127)
 ;--------------------------------------------------
+CalculateRemainingRoundsAI:
+	push bc
+	push de
+	push hl
+; Store from wBuffer to wDamage
+	ld hl, wBuffer
+	sla c
+	add hl, bc
+	ld a, [hli]
+	ld [wDamage], a
+	ld a, [hli]
+	ld [wDamage + 1], a
 ; If wDamage == 0 skip to .clamp
 	ld a, [wDamage]
 	ld b, a
@@ -422,9 +581,9 @@ AIMoveChoiceModification4:
 	xor a
 	ldh [hDividend], a
 	ldh [hDividend + 1], a
-	ld a, [wBattleMonMaxHP]
+	ld a, [wBattleMonHP]
 	ldh [hDividend + 2], a
-	ld a, [wBattleMonMaxHP + 1]
+	ld a, [wBattleMonHP + 1]
 	ldh [hDividend + 3], a
 ; Read move dmg	
 	ld a, [wDamage + 1]
@@ -442,21 +601,19 @@ AIMoveChoiceModification4:
 	jr z, .shouldClamp
 	inc bc
 	jr .shouldClamp
-
 .justDoLoopedSubstraction
 ; Note: This works because the quotient fits in a single byte (h)
 ;	  	when DMG > 255 (max HP is <= 2 ** 16 - 1, practically less than 1000)
 ; Load HP -> de, DMG -> bc, quotient in h
-	ld a, [wBattleMonMaxHP]
+	ld a, [wBattleMonHP]
 	ld d, a
-	ld a, [wBattleMonMaxHP + 1]
+	ld a, [wBattleMonHP + 1]
 	ld e, a
 	ld a, [wDamage]
 	ld b, a
 	ld a, [wDamage + 1]
 	ld c, a
 	ld h, 0
-
 .loop
 ; Loop until de < bc
 ; Note: will overestimate ceil(wBattleMonHP / wDamage)
@@ -485,22 +642,28 @@ AIMoveChoiceModification4:
 .clamp
 	ld a, 127
 .noClamp
-
-;--------------------------------------------------
-; End Compute Opponnent Remaining Rounds
-;--------------------------------------------------
-
+;-----------------------------
+; Pop and push
 	pop hl
 	pop de
 	pop bc
-
-;--------------------------------------------------
-; End Calculate Score
-;--------------------------------------------------
-
-; Store Score
+	push bc
+	push de
+	push hl
+;-----------------------------
+; Store to wBuffer + bc
+	ld hl, wBuffer
+	add hl, bc
 	ld [hl], a
-	jp .nextMove
+;-----------------------------
+; Pop and ret
+	pop hl
+	pop de
+	pop bc
+	ret
+;--------------------------------------------------
+; End Compute Opponnent Remaining Rounds
+;--------------------------------------------------
 
 ReadMove:
 	push hl
@@ -567,7 +730,7 @@ TrainerAI:
 	ld h, [hl]
 	ld l, a
 	call Random
-	jp hl
+	jp hl 		; run TrainerAIPointers?
 .done
 	and a
 	ret

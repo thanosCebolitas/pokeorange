@@ -76,10 +76,10 @@ SpecialTrainerMoves:
 	db 0
 
 	db LORELEI, 1
-	db 1, 1, LOVELY_KISS
-	db 1, 2, BLIZZARD
-	db 1, 3, PSYCHIC_M
-	db 1, 4, REST
+	db 1, 1, BODY_SLAM
+	db 1, 2, THUNDERBOLT
+	db 1, 3, BLIZZARD
+	db 1, 4, THUNDER
 
 	db 2, 1, CLAMP
 	db 2, 2, BLIZZARD
@@ -92,7 +92,7 @@ SpecialTrainerMoves:
 	db 3, 4, THUNDER_WAVE
 
 	db 4, 1, BODY_SLAM
-	db 4, 2, HYPER_BEAM
+	db 4, 2, THUNDERBOLT
 	db 4, 3, BLIZZARD
 	db 4, 4, EARTHQUAKE
 
