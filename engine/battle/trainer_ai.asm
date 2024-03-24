@@ -340,7 +340,7 @@ AIMoveChoiceModification4:
 	call CalculateRemainingRoundsAI
 
 ; Store Score
-	ld [hl], a
+;	ld [hl], a
 ;--------------------------------------------------
 ; End Calculate Score
 ;--------------------------------------------------
@@ -350,16 +350,13 @@ AIMoveChoiceModification4:
 ;--------------------------------------------------
 ; Calculate Damage for AI purposes
 ; Inputs: 
-;	d, the move id
+;	a, [de]: the move id
+;   c: move index
 ; Outputs: 
 ;	wDamage
 ;--------------------------------------------------
 CalculateDamageAI:
-;-----------------------------
-; Push registers to stack
-	push bc
-	push de
-	push hl
+	call StoreRegisters
 ;-----------------------------
 ; Store hWhoseTurn on stack and set to AI
 	ldh a, [hWhoseTurn]
@@ -368,7 +365,7 @@ CalculateDamageAI:
 	ldh [hWhoseTurn], a
 ;-----------------------------
 ; Base dmg calculation
-	ld a, b
+	ld a, c
 	ld [wEnemySelectedMove], a
 ; Base dmg - no crit
 	ld a, 0
@@ -376,19 +373,8 @@ CalculateDamageAI:
 	callfar GetDamageVarsForEnemyAttack
 	callfar CalculateDamage
 	callfar AdjustDamageForMoveType
-	; CAREFULL WITH THAT AXE EUGENE
-	ld hl, SP +2 ; pushed de on stack ie. enemy move id
-	push hl
+	call LoadRegisters
 	call WDamageWeightFactor
-; Reset registers; might not be needed
-	pop af
-	pop hl
-	pop de
-	pop bc
-	push bc
-	push de
-	push hl
-	push af
 ; Store dmg on stack temporarily
 	ld a, [wDamage]
 	ld b, a
@@ -398,23 +384,22 @@ CalculateDamageAI:
 ; Compute critical hit dmg as well
 	ld a, 1
 	ld [wCriticalHitOrOHKO], a
+	call LoadRegisters
 	callfar GetDamageVarsForEnemyAttack
 	callfar CalculateDamage
 	callfar AdjustDamageForMoveType
+	call LoadRegisters
 ; Update dmg accounting for crit rate
-; CAREFULL WITH THAT AXE EUGENE
-	ld hl, SP +4 ; pushed de on stack ie. enemy move id
-	push hl
 	call WDamageWeightFactor
 ; Compute weighted sum
 ; - weighted base dmg is on stack
 ; - weighted crit dmg is on wDamage
 	ld a, [wDamage]
-	ld d, a
+	ld b, a
 	ld a, [wDamage + 1]
-	ld e, a
+	ld c, a
 	pop hl 		; hl: weighted base dmg
-	add hl, de
+	add hl, bc
 ; Store back to wDamage
 	ld a, h
 	ld [wDamage], a
@@ -453,15 +438,8 @@ CalculateDamageAI:
 	ld b, 4
 	call Divide
 ;-----------------------------
-; Pop and push
-	pop hl
-	pop de
-	pop bc
-	push bc
-	push de
-	push hl
-;-----------------------------
 ; Store to wBuffer + 2 * bc, wBuffer + 2 * bc + 1
+	call LoadRegisters
 	ld hl, wBuffer
 	sla c
 	add hl, bc
@@ -469,11 +447,7 @@ CalculateDamageAI:
 	ld [hli], a
 	ldh a, [hQuotient + 3]
 	ld [hl], a
-;-----------------------------
-; Pop and ret
-	pop hl
-	pop de
-	pop bc
+	call LoadRegisters
 	ret
 
 ;--------------------------------------------------
@@ -514,14 +488,14 @@ WDamageWeightFactor:
 	srl a 					; speed / 2
 	jr .goOn
 .notCrit
+	ld a, [wMonHBaseSpeed]
+	srl a 					; speed / 2
 	cpl 					; 255 - a
 .goOn
 	ldh [hMultiplier], a
 	call Multiply
 ; divide by 512 (or by 64 if it's a high crit move)
-; CAREFULL WITH THAT AXE EUGENE
-	pop hl
-	ld a, l
+	ld a, [wEnemyMoveNum]
 	cp KARATE_CHOP
 	jr z, .highCrit
 	cp RAZOR_LEAF
@@ -642,8 +616,6 @@ CalculateRemainingRoundsAI:
 .clamp
 	ld a, 127
 .noClamp
-;-----------------------------
-; Pop and push
 	pop hl
 	pop de
 	pop bc
@@ -664,6 +636,41 @@ CalculateRemainingRoundsAI:
 ;--------------------------------------------------
 ; End Compute Opponnent Remaining Rounds
 ;--------------------------------------------------
+
+;--------------------------------------------------
+; The stack is almomst full, but we also need to store
+; variables somewhere temporarily :(
+StoreRegisters:
+	ld [wBuffer + 29], a
+	ld a, b
+	ld [wBuffer + 28], a
+	ld a, c
+	ld [wBuffer + 27], a
+	ld a, d
+	ld [wBuffer + 26], a
+	ld a, e
+	ld [wBuffer + 25], a
+	ld a, h
+	ld [wBuffer + 24], a
+	ld a, l
+	ld [wBuffer + 23], a
+	ret
+
+LoadRegisters:
+	ld a, [wBuffer + 23]
+	ld l, a
+	ld a, [wBuffer + 24]
+	ld h, a
+	ld a, [wBuffer + 25]
+	ld e, a
+	ld a, [wBuffer + 26]
+	ld d, a
+	ld a, [wBuffer + 27]
+	ld c, a
+	ld a, [wBuffer + 28]
+	ld b, a
+	ld a, [wBuffer + 29]
+	ret
 
 ReadMove:
 	push hl
