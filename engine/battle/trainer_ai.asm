@@ -370,8 +370,10 @@ CalculateDamageAI:
 ; Base dmg - no crit
 	ld a, 0
 	ld [wCriticalHitOrOHKO], a
-	callfar GetDamageVarsForEnemyAttack
-	callfar CalculateDamage
+	;callfar SwapPlayerAndEnemyLevels
+	call GetDamageVarsForEnemyAttackAlt
+	;callfar SwapPlayerAndEnemyLevels
+	call CalculateDamageAlt
 	callfar AdjustDamageForMoveType
 	call LoadRegisters
 	call WDamageWeightFactor
@@ -385,8 +387,10 @@ CalculateDamageAI:
 	ld a, 1
 	ld [wCriticalHitOrOHKO], a
 	call LoadRegisters
-	callfar GetDamageVarsForEnemyAttack
-	callfar CalculateDamage
+	;callfar SwapPlayerAndEnemyLevels
+	call GetDamageVarsForEnemyAttackAlt
+	;callfar SwapPlayerAndEnemyLevels
+	call CalculateDamageAlt
 	callfar AdjustDamageForMoveType
 	call LoadRegisters
 ; Update dmg accounting for crit rate
@@ -433,7 +437,7 @@ CalculateDamageAI:
 	ldh [hMultiplier], a
 	call Multiply
 ; divide by 100
-	ld a, 100
+	ld a, 255
 	ldh [hDivisor], a
 	ld b, 4
 	call Divide
@@ -670,6 +674,288 @@ LoadRegisters:
 	ld a, [wBuffer + 28]
 	ld b, a
 	ld a, [wBuffer + 29]
+	ret
+
+; sets b, c, d, and e for the CalculateDamage routine in the case of an attack by the enemy mon
+GetDamageVarsForEnemyAttackAlt:
+	ld hl, wDamage ; damage to eventually inflict, initialise to zero
+	xor a
+	ld [hli], a
+	ld [hl], a
+	ld hl, wEnemyMovePower
+	ld a, [hli]
+	ld d, a ; d = move power
+	and a
+	ret z ; return if move power is zero
+	ld a, [hl] ; a = [wEnemyMoveType]
+	cp SPECIAL ; types >= SPECIAL are all special
+	jr nc, .specialAttack
+.physicalAttack
+	ld hl, wBattleMonDefense
+	ld a, [hli]
+	ld b, a
+	ld c, [hl] ; bc = player defense
+	ld a, [wPlayerBattleStatus3]
+	bit HAS_REFLECT_UP, a ; check for Reflect
+	jr z, .physicalAttackCritCheck
+; if the player has used Reflect, double the player's defense
+	sla c
+	rl b
+.physicalAttackCritCheck
+	ld hl, wEnemyMonAttack
+	ld a, [wCriticalHitOrOHKO]
+	and a ; check for critical hit
+	jr z, .scaleStats
+; in the case of a critical hit, reset the player's defense and the enemy's attack to their base values
+	ld hl, wPartyMon1Defense
+	ld a, [wPlayerMonNumber]
+	ld bc, wPartyMon2 - wPartyMon1
+	call AddNTimes
+	ld a, [hli]
+	ld b, a
+	ld c, [hl]
+	push bc
+	ld c, STAT_ATTACK
+	callfar GetEnemyMonStat
+	ld hl, hProduct + 2
+	pop bc
+	jr .scaleStats
+.specialAttack
+	ld hl, wBattleMonSpecial
+	ld a, [hli]
+	ld b, a
+	ld c, [hl]
+	ld a, [wPlayerBattleStatus3]
+	bit HAS_LIGHT_SCREEN_UP, a ; check for Light Screen
+	jr z, .specialAttackCritCheck
+; if the player has used Light Screen, double the player's special
+	sla c
+	rl b
+; reflect and light screen boosts do not cap the stat at MAX_STAT_VALUE, so weird things will happen during stats scaling
+; if a Pokemon with 512 or more Defense has used Reflect, or if a Pokemon with 512 or more Special has used Light Screen
+.specialAttackCritCheck
+	ld hl, wEnemyMonSpecial
+	ld a, [wCriticalHitOrOHKO]
+	and a ; check for critical hit
+	jr z, .scaleStats
+; in the case of a critical hit, reset the player's and enemy's specials to their base values
+	ld hl, wPartyMon1Special
+	ld a, [wPlayerMonNumber]
+	ld bc, wPartyMon2 - wPartyMon1
+	call AddNTimes
+	ld a, [hli]
+	ld b, a
+	ld c, [hl]
+	push bc
+	ld c, STAT_SPECIAL
+	callfar GetEnemyMonStat
+	ld hl, hProduct + 2
+	pop bc
+; if either the offensive or defensive stat is too large to store in a byte, scale both stats by dividing them by 4
+; this allows values with up to 10 bits (values up to 1023) to be handled
+; anything larger will wrap around
+.scaleStats
+	ld a, [hli]
+	ld l, [hl]
+	ld h, a ; hl = enemy's offensive stat
+	or b ; is either high byte nonzero?
+	jr z, .next ; if not, we don't need to scale
+; bc /= 4 (scale player's defensive stat)
+	srl b
+	rr c
+	srl b
+	rr c
+; defensive stat can actually end up as 0, leading to a division by 0 freeze during damage calculation
+; hl /= 4 (scale enemy's offensive stat)
+	srl h
+	rr l
+	srl h
+	rr l
+	ld a, l
+	or h ; is the enemy's offensive stat 0?
+	jr nz, .next
+	inc l ; if the enemy's offensive stat is 0, bump it up to 1
+.next
+	ld b, l ; b = enemy's offensive stat (possibly scaled)
+	        ; (c already contains player's defensive stat (possibly scaled))
+	ld a, [wEnemyMonLevel]
+	ld e, a
+	ld a, [wCriticalHitOrOHKO]
+	and a ; check for critical hit
+	jr z, .done
+	sla e ; double level if it was a critical hit
+.done
+	ld a, $1
+	and a
+	and a
+	ret
+
+CalculateDamageAlt:
+; input:
+;   b: attack
+;   c: opponent defense
+;   d: base power
+;   e: level
+
+	ldh a, [hWhoseTurn] ; whose turn?
+	and a
+	ld a, [wPlayerMoveEffect]
+	jr z, .effect
+	ld a, [wEnemyMoveEffect]
+.effect
+
+; EXPLODE_EFFECT halves defense.
+	cp EXPLODE_EFFECT
+	jr nz, .ok
+	srl c
+	jr nz, .ok
+	inc c ; ...with a minimum value of 1 (used as a divisor later on)
+.ok
+
+; Multi-hit attacks may or may not have 0 bp.
+	cp TWO_TO_FIVE_ATTACKS_EFFECT
+	jr z, .skipbp
+	cp $1e
+	jr z, .skipbp
+
+; Calculate OHKO damage based on remaining HP.
+	cp OHKO_EFFECT
+	jp z, JumpToOHKOMoveEffect
+
+; Don't calculate damage for moves that don't do any.
+	ld a, d ; base power
+	and a
+	ret z
+.skipbp
+
+	xor a
+	ld hl, hDividend
+	ldi [hl], a
+	ldi [hl], a
+	ld [hl], a
+
+; Multiply level by 2
+	ld a, e ; level
+	add a
+	jr nc, .nc
+	push af
+	ld a, 1
+	ld [hl], a
+	pop af
+.nc
+	inc hl
+	ldi [hl], a
+
+; Divide by 5
+	ld a, 5
+	ldd [hl], a
+	push bc
+	ld b, 4
+	call Divide
+	pop bc
+
+; Add 2
+	inc [hl]
+	inc [hl]
+
+	inc hl ; multiplier
+
+; Multiply by attack base power
+	ld [hl], d
+	call Multiply
+
+; Multiply by attack stat
+	ld [hl], b
+	call Multiply
+
+; Divide by defender's defense stat
+	ld [hl], c
+	ld b, 4
+	call Divide
+
+; Divide by 50
+	ld [hl], 50
+	ld b, 4
+	call Divide
+
+; Update wCurDamage.
+; Capped at MAX_NEUTRAL_DAMAGE - MIN_NEUTRAL_DAMAGE: 999 - 2 = 997.
+	ld hl, wDamage
+	ld b, [hl]
+	ldh a, [hQuotient + 3]
+	add b
+	ldh [hQuotient + 3], a
+	jr nc, .dont_cap_1
+
+	ldh a, [hQuotient + 2]
+	inc a
+	ldh [hQuotient + 2], a
+	and a
+	jr z, .cap
+
+.dont_cap_1
+	ldh a, [hQuotient]
+	ld b, a
+	ldh a, [hQuotient + 1]
+	or a
+	jr nz, .cap
+
+	ldh a, [hQuotient + 2]
+	cp HIGH(MAX_NEUTRAL_DAMAGE - MIN_NEUTRAL_DAMAGE + 1)
+	jr c, .dont_cap_2
+
+	cp HIGH(MAX_NEUTRAL_DAMAGE - MIN_NEUTRAL_DAMAGE + 1) + 1
+	jr nc, .cap
+
+	ldh a, [hQuotient + 3]
+	cp LOW(MAX_NEUTRAL_DAMAGE - MIN_NEUTRAL_DAMAGE + 1)
+	jr nc, .cap
+
+.dont_cap_2
+	inc hl
+
+	ldh a, [hQuotient + 3]
+	ld b, [hl]
+	add b
+	ld [hld], a
+
+	ldh a, [hQuotient + 2]
+	ld b, [hl]
+	adc b
+	ld [hl], a
+	jr c, .cap
+
+	ld a, [hl]
+	cp HIGH(MAX_NEUTRAL_DAMAGE - MIN_NEUTRAL_DAMAGE + 1)
+	jr c, .dont_cap_3
+
+	cp HIGH(MAX_NEUTRAL_DAMAGE - MIN_NEUTRAL_DAMAGE + 1) + 1
+	jr nc, .cap
+
+	inc hl
+	ld a, [hld]
+	cp LOW(MAX_NEUTRAL_DAMAGE - MIN_NEUTRAL_DAMAGE + 1)
+	jr c, .dont_cap_3
+
+.cap
+	ld a, HIGH(MAX_NEUTRAL_DAMAGE - MIN_NEUTRAL_DAMAGE)
+	ld [hli], a
+	ld a, LOW(MAX_NEUTRAL_DAMAGE - MIN_NEUTRAL_DAMAGE)
+	ld [hld], a
+
+.dont_cap_3
+; Add back MIN_NEUTRAL_DAMAGE (capping at 999).
+	inc hl
+	ld a, [hl]
+	add MIN_NEUTRAL_DAMAGE
+	ld [hld], a
+	jr nc, .dont_floor
+	inc [hl]
+.dont_floor
+
+; Returns nz and nc.
+	ld a, 1
+	and a
 	ret
 
 ReadMove:
