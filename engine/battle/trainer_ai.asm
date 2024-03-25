@@ -487,7 +487,7 @@ WDamageWeightFactor:
 ; aka 
 	ld a, [wCriticalHitOrOHKO]
 	and a
-	jr nz, .notCrit
+	jr z, .notCrit
 	ld a, [wMonHBaseSpeed]
 	srl a 					; speed / 2
 	jr .goOn
@@ -511,6 +511,24 @@ WDamageWeightFactor:
 	ld a, 255 				; should be 256, but it's ok
 	jr .noHighCrit
 .highCrit
+	ld a, [wMonHBaseSpeed]
+	srl a 					; speed / 2
+	cp 32
+	jr c, .stdDivisor
+; if crit
+	ld a, [wCriticalHitOrOHKO]
+	and a
+	jr z, .notCritForHighCrit
+	ld a, [wMonHBaseSpeed]
+	srl a 					; speed / 2
+	jr .noHighCrit
+; if no crit
+.notCritForHighCrit
+	ld a, [wMonHBaseSpeed]
+	srl a 					; speed / 2
+	cpl
+	jr .noHighCrit
+.stdDivisor
 	ld a, 32
 .noHighCrit
 ; Divide by 255 or 32
