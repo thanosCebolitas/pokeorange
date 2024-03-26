@@ -418,9 +418,17 @@ ForEachMoveInDECallHL:
 
 
 BaseDamageCalcs:
+	ldh a, [hWhoseTurn]
+	and a
+	jr z, .player
 	call SwapPlayerAndEnemyLevelsAlt
+.player
 	call GetDamageVarsForEnemyAttackAlt
+	ldh a, [hWhoseTurn]
+	and a
+	jr z, .player2
 	call SwapPlayerAndEnemyLevelsAlt
+.player2
 	call CalculateDamageAlt
 	callfar AdjustDamageForMoveType
 	call LoadRegisters
