@@ -197,6 +197,7 @@ AIMoveChoiceModification2:
 ; discourage damaging moves that are ineffective or not very effective against the player's mon,
 ; unless there's no damaging move that deals at least neutral damage
 AIMoveChoiceModification3:
+	ret
 ;	ld hl, wBuffer - 1 ; temp move selection array (-1 byte offset)
 ;	ld de, wEnemyMonMoves ; enemy moves
 ;	ld b, NUM_MOVES + 1
