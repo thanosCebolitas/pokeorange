@@ -417,6 +417,16 @@ ForEachMoveInDECallHL:
 	jp .next
 
 
+BaseDamageCalcs:
+	call SwapPlayerAndEnemyLevelsAlt
+	call GetDamageVarsForEnemyAttackAlt
+	call SwapPlayerAndEnemyLevelsAlt
+	call CalculateDamageAlt
+	callfar AdjustDamageForMoveType
+	call LoadRegisters
+	call WDamageWeightFactor
+	ret
+
 
 ;--------------------------------------------------
 ; Calculate Damage for AI purposes
@@ -435,11 +445,7 @@ CalculateDamageAI:
 ; Base dmg - no crit
 	ld a, 0
 	ld [wCriticalHitOrOHKO], a
-	call GetDamageVarsForEnemyAttackAlt
-	call CalculateDamageAlt
-	callfar AdjustDamageForMoveType
-	call LoadRegisters
-	call WDamageWeightFactor
+	call BaseDamageCalcs
 ; Store dmg on stack temporarily
 	ld a, [wDamage]
 	ld b, a
@@ -450,12 +456,7 @@ CalculateDamageAI:
 	ld a, 1
 	ld [wCriticalHitOrOHKO], a
 	call LoadRegisters
-	call GetDamageVarsForEnemyAttackAlt
-	call CalculateDamageAlt
-	callfar AdjustDamageForMoveType
-	call LoadRegisters
-; Update dmg accounting for crit rate
-	call WDamageWeightFactor
+	call BaseDamageCalcs
 ; Compute weighted sum
 ; - weighted base dmg is on stack
 ; - weighted crit dmg is on wDamage
@@ -507,6 +508,18 @@ CalculateDamageAI:
 	ldh a, [hQuotient + 3]
 	ld [hl], a
 	call LoadRegisters
+	ret
+
+; swaps the level values of the BattleMon and EnemyMon structs
+SwapPlayerAndEnemyLevelsAlt:
+	push bc
+	ld a, [wBattleMonLevel]
+	ld b, a
+	ld a, [wEnemyMonLevel]
+	ld [wBattleMonLevel], a
+	ld a, b
+	ld [wEnemyMonLevel], a
+	pop bc
 	ret
 
 ;--------------------------------------------------
