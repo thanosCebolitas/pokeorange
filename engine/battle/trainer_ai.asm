@@ -152,172 +152,206 @@ StatusAilmentMoveEffects:
 ; in particular, stat-modifying moves and other move effects
 ; that fall in-between
 AIMoveChoiceModification2:
-	ld hl, wBuffer - 1 ; temp move selection array (-1 byte offset)
-	ld de, wEnemyMonMoves ; enemy moves
-	ld b, NUM_MOVES + 1
-.nextMove
-	dec b
-	ret z ; processed all 4 moves
-	inc hl
-	ld a, [de]
-	and a
-	ret z ; no more moves in move set
-	inc de
-	call ReadMove
-	ld a, [wEnemyMoveEffect]
-	cp ATTACK_UP1_EFFECT
-	jr z, .nextMove
-	cp BIDE_EFFECT
-	jr z, .preferMove
-	cp ATTACK_UP2_EFFECT
-	jr z, .nextMove
-	cp POISON_EFFECT
-	jr z, .preferMove
-	cp PARALYZE_EFFECT
-	jr z, .preferMove2
-	cp SLEEP_EFFECT
-	jr z, .preferMove2
-; Confusion is last since it needs somewhat special handling
-	cp CONFUSION_EFFECT
-	jr nz, .nextMove
-	ld a, [wPlayerBattleStatus1]
-	bit 7, a
-	jr z, .preferMove2
-	inc [hl] ; slightly discourage this move
-	jr .nextMove
-.preferMove
-	dec [hl] ; slightly encourage this move
-	jr .nextMove
-.preferMove2
-	dec [hl] ; encourage this move
-	dec [hl] ; encourage this move
-	jr .nextMove
+;	ld hl, wBuffer - 1 ; temp move selection array (-1 byte offset)
+;	ld de, wEnemyMonMoves ; enemy moves
+;	ld b, NUM_MOVES + 1
+;.nextMove
+;	dec b
+;	ret z ; processed all 4 moves
+;	inc hl
+;	ld a, [de]
+;	and a
+;	ret z ; no more moves in move set
+;	inc de
+;	call ReadMove
+;	ld a, [wEnemyMoveEffect]
+;	cp ATTACK_UP1_EFFECT
+;	jr z, .nextMove
+;	cp BIDE_EFFECT
+;	jr z, .preferMove
+;	cp ATTACK_UP2_EFFECT
+;	jr z, .nextMove
+;	cp POISON_EFFECT
+;	jr z, .preferMove
+;	cp PARALYZE_EFFECT
+;	jr z, .preferMove2
+;	cp SLEEP_EFFECT
+;	jr z, .preferMove2
+;; Confusion is last since it needs somewhat special handling
+;	cp CONFUSION_EFFECT
+;	jr nz, .nextMove
+;	ld a, [wPlayerBattleStatus1]
+;	bit 7, a
+;	jr z, .preferMove2
+;	inc [hl] ; slightly discourage this move
+;	jr .nextMove
+;.preferMove
+;	dec [hl] ; slightly encourage this move
+;	jr .nextMove
+;.preferMove2
+;	dec [hl] ; encourage this move
+;	dec [hl] ; encourage this move
+;	jr .nextMove
 
 ; encourages moves that are effective against the player's mon (even if non-damaging).
 ; discourage damaging moves that are ineffective or not very effective against the player's mon,
 ; unless there's no damaging move that deals at least neutral damage
 AIMoveChoiceModification3:
-	ld hl, wBuffer - 1 ; temp move selection array (-1 byte offset)
-	ld de, wEnemyMonMoves ; enemy moves
-	ld b, NUM_MOVES + 1
-.nextMove
-	dec b
-	ret z ; processed all 4 moves
-	inc hl
-	ld a, [de]
-	and a
-	ret z ; no more moves in move set
-	inc de
-	call ReadMove
-	push hl
-	push bc
-	push de
-	callfar AIGetTypeEffectiveness
-	pop de
-	pop bc
-	pop hl
-; Discourage healing moves if at full HP	
-	ld a, [wEnemyMoveEffect]
-	cp HEAL_EFFECT
-	jr nz, .notHealing
-	push bc
-	push de
-; Division by 3
-	xor a
-	ldh [hDividend], a
-	ldh [hDividend + 1], a
-	ld a, [wEnemyMonMaxHP]
-	ldh [hDividend + 2], a
-	ld a, [wEnemyMonMaxHP + 1]
-	ldh [hDividend + 3], a
-	ld a, 3
-	ldh [hDivisor], a
-	ld b, 4
-	call Divide
-; Compare results
-	ld a, [wEnemyMonHP]
-	ld d, a
-	ld a, [wEnemyMonHP + 1]
-	ld e, a
-	ldh a, [hQuotient + 2]
-	cp d
-	jr c, .discourageMove			; current HP is more than 1/3 of total
-	jr nz, .encourageMove			; current HP is less than 1/3 of total
-	ldh a, [hQuotient + 3]
-	cp e
-	jr c, .discourageMove			; current HP is more than 1/3 of total
-.encourageMove
-	pop de
-	pop bc
-	dec [hl] 						; encourage this move
-	dec [hl] 						; encourage this move
-	dec [hl] 						; encourage this move
-	dec [hl] 						; encourage this move
-	jr .nextMove
-.discourageMove
-	pop de
-	pop bc
-	ld a, [hl]
-	add $4 ; heavily discourage move
-	ld [hl], a
-	jr .notEffectiveMove
-.notHealing
-	ld a, [wTypeEffectiveness]
-	cp 10
-	jr z, .nextMove
-	jr c, .notEffectiveMove
-	dec [hl] ; slightly encourage this move
-	cp 20
-	jr nz, .nextMove
-;	dec [hl] ; encourage more if super effective
-	jr .nextMove
-.notEffectiveMove
-	inc [hl] ; slightly discourage this move
-	jp .nextMove
+;	ld hl, wBuffer - 1 ; temp move selection array (-1 byte offset)
+;	ld de, wEnemyMonMoves ; enemy moves
+;	ld b, NUM_MOVES + 1
+;.nextMove
+;	dec b
+;	ret z ; processed all 4 moves
+;	inc hl
+;	ld a, [de]
+;	and a
+;	ret z ; no more moves in move set
+;	inc de
+;	call ReadMove
+;	push hl
+;	push bc
+;	push de
+;	callfar AIGetTypeEffectiveness
+;	pop de
+;	pop bc
+;	pop hl
+;; Discourage healing moves if at full HP	
+;	ld a, [wEnemyMoveEffect]
+;	cp HEAL_EFFECT
+;	jr nz, .notHealing
+;	push bc
+;	push de
+;; Division by 3
+;	xor a
+;	ldh [hDividend], a
+;	ldh [hDividend + 1], a
+;	ld a, [wEnemyMonMaxHP]
+;	ldh [hDividend + 2], a
+;	ld a, [wEnemyMonMaxHP + 1]
+;	ldh [hDividend + 3], a
+;	ld a, 3
+;	ldh [hDivisor], a
+;	ld b, 4
+;	call Divide
+;; Compare results
+;	ld a, [wEnemyMonHP]
+;	ld d, a
+;	ld a, [wEnemyMonHP + 1]
+;	ld e, a
+;	ldh a, [hQuotient + 2]
+;	cp d
+;	jr c, .discourageMove			; current HP is more than 1/3 of total
+;	jr nz, .encourageMove			; current HP is less than 1/3 of total
+;	ldh a, [hQuotient + 3]
+;	cp e
+;	jr c, .discourageMove			; current HP is more than 1/3 of total
+;.encourageMove
+;	pop de
+;	pop bc
+;	dec [hl] 						; encourage this move
+;	dec [hl] 						; encourage this move
+;	dec [hl] 						; encourage this move
+;	dec [hl] 						; encourage this move
+;	jr .nextMove
+;.discourageMove
+;	pop de
+;	pop bc
+;	ld a, [hl]
+;	add $4 ; heavily discourage move
+;	ld [hl], a
+;	jr .notEffectiveMove
+;.notHealing
+;	ld a, [wTypeEffectiveness]
+;	cp 10
+;	jr z, .nextMove
+;	jr c, .notEffectiveMove
+;	dec [hl] ; slightly encourage this move
+;	cp 20
+;	jr nz, .nextMove
+;;	dec [hl] ; encourage more if super effective
+;	jr .nextMove
+;.notEffectiveMove
+;	inc [hl] ; slightly discourage this move
+;	jp .nextMove
+
+MACRO OPP_MOV_DMG      
+	wPrinterTileBuffer
+ENDM
+MACRO OPP_MOV_CAT      
+	wPrinterTileBuffer + 8
+ENDM
+MACRO OPP_MOV_DMG_SETS 
+	wPrinterTileBuffer + 12
+ENDM
+MACRO OPP_MOV_DMG_BEST 
+	wPrinterTileBuffer + 43
+ENDM
+MACRO OUR_HEALTH 		 
+	wPrinterTileBuffer + 47
+ENDM
+MACRO OUR_TURNS 		 
+	wPrinterTileBuffer + 51
+ENDM
+MACRO OUR_MOV_DMG     
+	wPrinterTileBuffer + 55
+ENDM
+MACRO OUR_MOV_CAT     
+	wPrinterTileBuffer + 63
+ENDM
+MACRO OUR_MOV_DMG_SETS
+	wPrinterTileBuffer + 67
+ENDM
+MACRO OUR_MOV_DMG_BEST
+	wPrinterTileBuffer + 99
+ENDM
+MACRO OPP_TURNS 		
+	wPrinterTileBuffer + 103
+ENDM
 
 AIMoveChoiceModification4:
 ;-------------------------------------------------------------------------------
 ; Note: Assumes we can freely use all registers
 ;
+; wPrinterTileBuffer usage:
+; bytes [  0:  7] 	opponet move avg dmg
+; bytes [  8: 11]  	opponent move categories
+; bytes [ 12: 43]  	opponent move dmg sets for stat changing moves
+; bytes [ 43: 46]   best opponent move dmg for each set from above
+; bytes [ 47: 50]   our health after healing/recoil/explode moves
+; bytes [ 51: 54]   our remaining turns
+;
+; bytes [ 55: 62]   our move avg dmg
+; bytes [ 63: 66]   our move categories
+; bytes [ 67: 98]  	our move dmg sets for stat changing moves
+; bytes [ 99:102]   our best move dmg for each set from above
+; bytes [103:106]   opponent remaining turns
+;
 ; wBuffer usage:
 ; bytes [ 0: 3] 	final move score (lower is better)
-; byte       4  	opponent best move max dmg
-; byte       5   	opponent best move category
-; bytes [ 6:13]  	our move avg dmg
-; bytes [14:21]  	opponent best move dmg as modified by our moveset
-; bytes [22:25]     remaining moves
-; bytes [26:29]     opponent remaining moves
+; bytes [23:29]     temp register storage
 ;
-; Function summary:
-; - Loop 1:
-; 	- Compute & store opponent best move max dmg & category
-; - Loop 2:
-; 	- Compute & store our moves avg dmg
-; - Loop 3:
-; 	- Compute opponent modified best move dmg (ie apply volatile statuses)
-; 	- Update our moves avg dmg to account for volatile statuses
-; - Loop 4:
-; 	- Compute remaining moves
-; 	- Compute opponent remaining moves
-; - Loop 5:
-; 	- Update remaining moves to account for healing, paralyze, sleep & confusion
-; 	- Update opponent remaining moves to account for confusion
-; - Loop 6:
-; 	- Compute final score as (opponent remaining moves) - (remaining moves)
 ;-------------------------------------------------------------------------------
-	ld de, wEnemyMonMoves ; enemy moves
-	ld c, -1
-	ld b, 0
-.nextMove
-	inc c
-	ld a, c
-	cp NUM_MOVES
-	ret z ; processed all 4 moves
-	ld a, [de]
-	and a
-	ret z ; no more moves in move set
-	call ReadMove
-	inc de
+; Function summary:
+; - Calc opponent move avg dmg 								( 8 bytes)
+; - Store opponent move category 							( 4 bytes)
+; - Update opponent move dmg for our stat changing moves 	(32 bytes)
+; - Pick max for each set from above						( 8 bytes)
+; - Store our health after each healing/recoil/explode move	( 8 bytes)
+; - Calc our remaining turns based on stored health 		( 4 bytes)
+;
+; - Calc our move avg dmg 									( 8 bytes)
+; - Store each move category 								( 4 bytes)
+; - Update our move dmg for our stat changing moves  		(32 bytes)
+; - Pick max for each set from above						( 8 bytes)
+; - Calc opponent remaining turns 							( 4 bytes)
+;
+; - For each healing, stat changing & status inducing move dec our remaining turns
+; - For PRZ, SLP, FRZ, update our remaining turns
+; - If WE are PRZ, SLP, FRZ, update opponent turns
+; - Update turns for fly/dig/clamp/wrap
+;
+; - Compute final score as (opponent remaining moves) - (remaining moves)
 ;--------------------------------------------------
 ; Calculate score
 ;--------------------------------------------------
@@ -336,15 +370,50 @@ AIMoveChoiceModification4:
 	; TODO: Handle volatile status
 	; TODO: Handle stat changes
 
-	call CalculateDamageAI
-	call CalculateRemainingRoundsAI
-
-; Store Score
-;	ld [hl], a
 ;--------------------------------------------------
 ; End Calculate Score
 ;--------------------------------------------------
-	jp .nextMove
+;-----------------------------
+; Store hWhoseTurn on stack and set to AI
+	ldh a, [hWhoseTurn]
+	push af
+	ld a, 1
+	ldh [hWhoseTurn], a
+;-----------------------------
+	ld de, wEnemyMonMoves
+	ld hl, CalculateDamageAI
+	call ForEachMoveInDECallHL
+	ld de, wEnemyMonMoves
+	ld hl, CalculateRemainingRoundsAI
+	call ForEachMoveInDECallHL
+;-----------------------------
+; Restore hWhoseTurn
+	pop af
+	ldh [hWhoseTurn], a
+;-----------------------------
+	ret
+
+ForEachMoveInDECallHL:
+	ld c, -1
+	ld b, 0
+.next
+	inc c
+	ld a, c
+	cp NUM_MOVES
+	ret z ; processed all 4 moves
+	ld a, [de]
+	and a
+	ret z ; no more moves in move set
+	call ReadMove
+	inc de
+	call StoreRegisters
+	ld hl, .retPoint
+	push hl
+	call LoadRegisters
+	jp hl
+.retPoint
+	jp .next
+
 
 
 ;--------------------------------------------------
@@ -358,21 +427,13 @@ AIMoveChoiceModification4:
 CalculateDamageAI:
 	call StoreRegisters
 ;-----------------------------
-; Store hWhoseTurn on stack and set to AI
-	ldh a, [hWhoseTurn]
-	push af
-	ld a, 1
-	ldh [hWhoseTurn], a
-;-----------------------------
 ; Base dmg calculation
 	ld a, c
 	ld [wEnemySelectedMove], a
 ; Base dmg - no crit
 	ld a, 0
 	ld [wCriticalHitOrOHKO], a
-	;callfar SwapPlayerAndEnemyLevels
 	call GetDamageVarsForEnemyAttackAlt
-	;callfar SwapPlayerAndEnemyLevels
 	call CalculateDamageAlt
 	callfar AdjustDamageForMoveType
 	call LoadRegisters
@@ -387,9 +448,7 @@ CalculateDamageAI:
 	ld a, 1
 	ld [wCriticalHitOrOHKO], a
 	call LoadRegisters
-	;callfar SwapPlayerAndEnemyLevels
 	call GetDamageVarsForEnemyAttackAlt
-	;callfar SwapPlayerAndEnemyLevels
 	call CalculateDamageAlt
 	callfar AdjustDamageForMoveType
 	call LoadRegisters
@@ -410,20 +469,15 @@ CalculateDamageAI:
 	ld a, l
 	ld [wDamage + 1], a
 ;-----------------------------
-; Restore hWhoseTurn
-	pop af
-	ldh [hWhoseTurn], a
-;-----------------------------
-; Correct for minimum damage
-; AI doesn't like taking risks : )
-; multiply by 217
+; Correct for avg damage
+; multiply by 236
 	xor a
 	ldh [hMultiplicand], a
 	ld a, [wDamage]
 	ldh [hMultiplicand + 1], a
 	ld a, [wDamage + 1]
 	ldh [hMultiplicand + 2], a
-	ld a, 217
+	ld a, 236
 	ldh [hMultiplier], a
 	call Multiply
 ; divide by 255
@@ -436,7 +490,6 @@ CalculateDamageAI:
 	ld a, [wEnemyMoveAccuracy]
 	ldh [hMultiplier], a
 	call Multiply
-; divide by 100
 	ld a, 255
 	ldh [hDivisor], a
 	ld b, 4
@@ -805,6 +858,119 @@ GetDamageVarsForEnemyAttackAlt:
 .done
 	ld a, $1
 	and a
+	and a
+	ret
+
+; sets b, c, d, and e for the CalculateDamage routine in the case of an attack by the player mon
+GetDamageVarsForPlayerAttackAlt:
+	xor a
+	ld hl, wDamage ; damage to eventually inflict, initialise to zero
+	ldi [hl], a
+	ld [hl], a
+	ld hl, wPlayerMovePower
+	ld a, [hli]
+	and a
+	ld d, a ; d = move power
+	ret z ; return if move power is zero
+	ld a, [hl] ; a = [wPlayerMoveType]
+	cp SPECIAL ; types >= SPECIAL are all special
+	jr nc, .specialAttack
+.physicalAttack
+	ld hl, wEnemyMonDefense
+	ld a, [hli]
+	ld b, a
+	ld c, [hl] ; bc = enemy defense
+	ld a, [wEnemyBattleStatus3]
+	bit HAS_REFLECT_UP, a ; check for Reflect
+	jr z, .physicalAttackCritCheck
+; if the enemy has used Reflect, double the enemy's defense
+	sla c
+	rl b
+.physicalAttackCritCheck
+	ld hl, wBattleMonAttack
+	ld a, [wCriticalHitOrOHKO]
+	and a ; check for critical hit
+	jr z, .scaleStats
+; in the case of a critical hit, reset the player's attack and the enemy's defense to their base values
+	ld c, STAT_DEFENSE
+	call GetEnemyMonStat
+	ldh a, [hProduct + 2]
+	ld b, a
+	ldh a, [hProduct + 3]
+	ld c, a
+	push bc
+	ld hl, wPartyMon1Attack
+	ld a, [wPlayerMonNumber]
+	ld bc, wPartyMon2 - wPartyMon1
+	call AddNTimes
+	pop bc
+	jr .scaleStats
+.specialAttack
+	ld hl, wEnemyMonSpecial
+	ld a, [hli]
+	ld b, a
+	ld c, [hl] ; bc = enemy special
+	ld a, [wEnemyBattleStatus3]
+	bit HAS_LIGHT_SCREEN_UP, a ; check for Light Screen
+	jr z, .specialAttackCritCheck
+; if the enemy has used Light Screen, double the enemy's special
+	sla c
+	rl b
+; reflect and light screen boosts do not cap the stat at MAX_STAT_VALUE, so weird things will happen during stats scaling
+; if a Pokemon with 512 or more Defense has used Reflect, or if a Pokemon with 512 or more Special has used Light Screen
+.specialAttackCritCheck
+	ld hl, wBattleMonSpecial
+	ld a, [wCriticalHitOrOHKO]
+	and a ; check for critical hit
+	jr z, .scaleStats
+; in the case of a critical hit, reset the player's and enemy's specials to their base values
+	ld c, STAT_SPECIAL
+	call GetEnemyMonStat
+	ldh a, [hProduct + 2]
+	ld b, a
+	ldh a, [hProduct + 3]
+	ld c, a
+	push bc
+	ld hl, wPartyMon1Special
+	ld a, [wPlayerMonNumber]
+	ld bc, wPartyMon2 - wPartyMon1
+	call AddNTimes
+	pop bc
+; if either the offensive or defensive stat is too large to store in a byte, scale both stats by dividing them by 4
+; this allows values with up to 10 bits (values up to 1023) to be handled
+; anything larger will wrap around
+.scaleStats
+	ld a, [hli]
+	ld l, [hl]
+	ld h, a ; hl = player's offensive stat
+	or b ; is either high byte nonzero?
+	jr z, .next ; if not, we don't need to scale
+; bc /= 4 (scale enemy's defensive stat)
+	srl b
+	rr c
+	srl b
+	rr c
+; defensive stat can actually end up as 0, leading to a division by 0 freeze during damage calculation
+; hl /= 4 (scale player's offensive stat)
+	srl h
+	rr l
+	srl h
+	rr l
+	ld a, l
+	or h ; is the player's offensive stat 0?
+	jr nz, .next
+	inc l ; if the player's offensive stat is 0, bump it up to 1
+.next
+	ld b, l ; b = player's offensive stat (possibly scaled)
+	        ; (c already contains enemy's defensive stat (possibly scaled))
+	ld a, [wBattleMonLevel]
+	ld e, a ; e = level
+	ld a, [wCriticalHitOrOHKO]
+	and a ; check for critical hit
+	jr z, .done
+	sla e ; double level if it was a critical hit
+.done
+	ld a, 1
 	and a
 	ret
 
