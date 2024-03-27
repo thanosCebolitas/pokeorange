@@ -107,46 +107,47 @@ AIMoveChoiceModificationFunctionPointers:
 
 ; discourages moves that cause no damage but only a status ailment if player's mon already has one
 AIMoveChoiceModification1:
-	ld a, [wBattleMonStatus]
-	and a
-	ret z ; return if no status ailment on player's mon
-	ld hl, wBuffer - 1 ; temp move selection array (-1 byte offset)
-	ld de, wEnemyMonMoves ; enemy moves
-	ld b, NUM_MOVES + 1
-.nextMove
-	dec b
-	ret z ; processed all 4 moves
-	inc hl
-	ld a, [de]
-	and a
-	ret z ; no more moves in move set
-	inc de
-	call ReadMove
-	ld a, [wEnemyMovePower]
-	and a
-	jr nz, .nextMove
-	ld a, [wEnemyMoveEffect]
-	push hl
-	push de
-	push bc
-	ld hl, StatusAilmentMoveEffects
-	ld de, 1
-	call IsInArray
-	pop bc
-	pop de
-	pop hl
-	jr nc, .nextMove
-	ld a, [hl]
-	add $5 ; heavily discourage move
-	ld [hl], a
-	jr .nextMove
+	ret
+;	ld a, [wBattleMonStatus]
+;	and a
+;	ret z ; return if no status ailment on player's mon
+;	ld hl, wBuffer - 1 ; temp move selection array (-1 byte offset)
+;	ld de, wEnemyMonMoves ; enemy moves
+;	ld b, NUM_MOVES + 1
+;.nextMove
+;	dec b
+;	ret z ; processed all 4 moves
+;	inc hl
+;	ld a, [de]
+;	and a
+;	ret z ; no more moves in move set
+;	inc de
+;	call ReadMove
+;	ld a, [wEnemyMovePower]
+;	and a
+;	jr nz, .nextMove
+;	ld a, [wEnemyMoveEffect]
+;	push hl
+;	push de
+;	push bc
+;	ld hl, StatusAilmentMoveEffects
+;	ld de, 1
+;	call IsInArray
+;	pop bc
+;	pop de
+;	pop hl
+;	jr nc, .nextMove
+;	ld a, [hl]
+;	add $5 ; heavily discourage move
+;	ld [hl], a
+;	jr .nextMove
 
-StatusAilmentMoveEffects:
-	db EFFECT_01 ; unused sleep effect
-	db SLEEP_EFFECT
-	db POISON_EFFECT
-	db PARALYZE_EFFECT
-	db -1 ; end
+;StatusAilmentMoveEffects:
+;	db EFFECT_01 ; unused sleep effect
+;	db SLEEP_EFFECT
+;	db POISON_EFFECT
+;	db PARALYZE_EFFECT
+;	db -1 ; end
 
 ; slightly encourage moves with specific effects.
 ; in particular, stat-modifying moves and other move effects
@@ -277,38 +278,45 @@ AIMoveChoiceModification3:
 ;	inc [hl] ; slightly discourage this move
 ;	jp .nextMove
 
-MACRO OPP_MOV_DMG      
-	wPrinterTileBuffer
+DEF OPP_MOV_DMG EQU 0
+DEF OPP_MOV_CAT EQU 8
+DEF OPP_MOV_DMG_SETS EQU 12
+DEF OPP_MOV_DMG_BEST EQU 43
+DEF OUR_HEALTH EQU 47
+DEF OUR_TURNS EQU 51
+
+DEF OUR_MOV_DMG EQU 55
+DEF OUR_MOV_CAT EQU 63
+DEF OUR_MOV_DMG_SETS EQU 67
+DEF OUR_MOV_DMG_BEST EQU 99
+DEF OPP_TURNS EQU 103
+
+DEF INPUT_PTR EQU 19
+DEF OUTPUT_PTR EQU 21
+
+MACRO set_input_buffer
+	ld a, HIGH(\1)
+	ld [wBuffer + INPUT_PTR], a
+	ld a, LOW(\1)
+	ld [wBuffer + INPUT_PTR + 1], a
 ENDM
-MACRO OPP_MOV_CAT      
-	wPrinterTileBuffer + 8
+
+MACRO set_output_buffer
+	ld a, HIGH(\1)
+	ld [wBuffer + OUTPUT_PTR], a
+	ld a, LOW(\1)
+	ld [wBuffer + OUTPUT_PTR + 1], a
 ENDM
-MACRO OPP_MOV_DMG_SETS 
-	wPrinterTileBuffer + 12
-ENDM
-MACRO OPP_MOV_DMG_BEST 
-	wPrinterTileBuffer + 43
-ENDM
-MACRO OUR_HEALTH 		 
-	wPrinterTileBuffer + 47
-ENDM
-MACRO OUR_TURNS 		 
-	wPrinterTileBuffer + 51
-ENDM
-MACRO OUR_MOV_DMG     
-	wPrinterTileBuffer + 55
-ENDM
-MACRO OUR_MOV_CAT     
-	wPrinterTileBuffer + 63
-ENDM
-MACRO OUR_MOV_DMG_SETS
-	wPrinterTileBuffer + 67
-ENDM
-MACRO OUR_MOV_DMG_BEST
-	wPrinterTileBuffer + 99
-ENDM
-MACRO OPP_TURNS 		
-	wPrinterTileBuffer + 103
+
+MACRO write_to_output_buffer_b
+	ld hl, wBuffer + OUTPUT_PTR
+	ld d, [hl]
+	inc hl
+	ld e, [hl]
+	ld h, d
+	ld l, e
+	add hl, \1
+	ld [hl], \2
 ENDM
 
 AIMoveChoiceModification4:
@@ -331,6 +339,8 @@ AIMoveChoiceModification4:
 ;
 ; wBuffer usage:
 ; bytes [ 0: 3] 	final move score (lower is better)
+; bytes [19:20] 	mem ptr to input data
+; bytes [21:22] 	mem ptr to output data
 ; bytes [23:29]     temp register storage
 ;
 ;-------------------------------------------------------------------------------
@@ -384,15 +394,33 @@ AIMoveChoiceModification4:
 ;-----------------------------
 	ld de, wEnemyMonMoves
 	ld hl, CalculateDamageAI
+	set_output_buffer (wBuffer)
 	call ForEachMoveInDECallHL
+
 	ld de, wEnemyMonMoves
 	ld hl, CalculateRemainingRoundsAI
+	set_output_buffer (wPrinterTileBuffer + OPP_TURNS)
+	call ForEachMoveInDECallHL
+
+	ld de, wEnemyMonMoves
+	ld hl, CalculateScore
 	call ForEachMoveInDECallHL
 ;-----------------------------
 ; Restore hWhoseTurn
 	pop af
 	ldh [hWhoseTurn], a
 ;-----------------------------
+	ret
+
+CalculateScore:
+	push hl
+	ld hl, wPrinterTileBuffer + 103
+	add hl, bc
+	ld a, [hl]
+	ld hl, wBuffer
+	add hl, bc
+	ld [hl], a
+	pop hl
 	ret
 
 ForEachMoveInDECallHL:
@@ -508,13 +536,12 @@ CalculateDamageAI:
 ;-----------------------------
 ; Store to wBuffer + 2 * bc, wBuffer + 2 * bc + 1
 	call LoadRegisters
-	ld hl, wBuffer
-	sla c
-	add hl, bc
 	ldh a, [hQuotient + 2]
-	ld [hli], a
+	sla c
+	write_to_output_buffer_b bc, a
 	ldh a, [hQuotient + 3]
-	ld [hl], a
+	inc bc
+	write_to_output_buffer_b bc, a
 	call LoadRegisters
 	ret
 
@@ -626,9 +653,9 @@ WDamageWeightFactor:
 ; 	a = min(ceil(wBattleMonHP / wDamage), 127)
 ;--------------------------------------------------
 CalculateRemainingRoundsAI:
-	push bc
-	push de
 	push hl
+	push de
+	push bc
 ; Store from wBuffer to wDamage
 	ld hl, wBuffer
 	sla c
@@ -714,22 +741,14 @@ CalculateRemainingRoundsAI:
 .clamp
 	ld a, 127
 .noClamp
-	pop hl
-	pop de
 	pop bc
 	push bc
-	push de
-	push hl
-;-----------------------------
-; Store to wBuffer + bc
-	ld hl, wBuffer
-	add hl, bc
-	ld [hl], a
+	write_to_output_buffer_b bc, a
 ;-----------------------------
 ; Pop and ret
-	pop hl
-	pop de
 	pop bc
+	pop de
+	pop hl
 	ret
 ;--------------------------------------------------
 ; End Compute Opponnent Remaining Rounds
