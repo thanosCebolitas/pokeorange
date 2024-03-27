@@ -1,13 +1,22 @@
 MACRO farcall
 	ld b, BANK(\1)
 	ld hl, \1
-	call Bankswitch
+	rst _Bankswitch
 ENDM
 
 MACRO callfar
 	ld hl, \1
 	ld b, BANK(\1)
-	call Bankswitch
+	rst _Bankswitch
+ENDM
+
+MACRO callfar2
+	ld hl, \1
+	push bc
+	ld b, BANK(\1)
+	call Bankswitch2
+	pop bc 	; corresponds to push in line 15 but data have been
+			; modified during Bankswitch2
 ENDM
 
 MACRO farjp
