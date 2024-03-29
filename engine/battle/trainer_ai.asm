@@ -291,6 +291,8 @@ DEF OUR_MOV_DMG_SETS EQU 67
 DEF OUR_MOV_DMG_BEST EQU 99
 DEF OPP_TURNS EQU 103
 
+DEF MOVE_SWAP EQU 107
+
 DEF INPUT_PTR EQU 19
 DEF OUTPUT_PTR EQU 21
 
@@ -309,6 +311,8 @@ MACRO set_output_buffer
 ENDM
 
 MACRO write_to_output_buffer_b
+	push de
+	push hl
 	ld hl, wBuffer + OUTPUT_PTR
 	ld d, [hl]
 	inc hl
@@ -317,6 +321,23 @@ MACRO write_to_output_buffer_b
 	ld l, e
 	add hl, \1
 	ld [hl], \2
+	pop hl
+	pop de
+ENDM
+
+MACRO read_from_input_buffer_b
+	push de
+	push hl
+	ld hl, wBuffer + INPUT_PTR
+	ld d, [hl]
+	inc hl
+	ld e, [hl]
+	ld h, d
+	ld l, e
+	add hl, \1
+	ld \2, [hl]
+	pop hl
+	pop de
 ENDM
 
 AIMoveChoiceModification4:
@@ -336,6 +357,8 @@ AIMoveChoiceModification4:
 ; bytes [ 67: 98]  	our move dmg sets for stat changing moves
 ; bytes [ 99:102]   our best move dmg for each set from above
 ; bytes [103:106]   opponent remaining turns
+
+; bytes [107:112]   temp array for move struct swap
 ;
 ; wBuffer usage:
 ; bytes [ 0: 3] 	final move score (lower is better)
@@ -386,9 +409,29 @@ AIMoveChoiceModification4:
 ; End Calculate Score
 ;--------------------------------------------------
 ;-----------------------------
-; Store hWhoseTurn on stack and set to AI
+; Store hWhoseTurn on stack and set to Player
 	ldh a, [hWhoseTurn]
 	push af
+	ld a, 0
+	ldh [hWhoseTurn], a
+;-----------------------------
+	ld de, wBattleMonMoves
+	ld hl, CalculateDamageAI
+	set_output_buffer (wBuffer)
+	call ForEachMoveInDECallHL
+
+	ld de, wBattleMonMoves
+	ld hl, CalculateRemainingRoundsAI
+	set_output_buffer (wPrinterTileBuffer + OUR_TURNS)
+	call ForEachMoveInDECallHL
+
+	ld de, wBattleMonMoves
+	ld hl, CalculateScore
+	set_input_buffer (wPrinterTileBuffer + OUR_TURNS)
+	set_output_buffer (wBuffer)
+	call ForEachMoveInDECallHL
+;-----------------------------
+; Set hWhoseTurn to AI
 	ld a, 1
 	ldh [hWhoseTurn], a
 ;-----------------------------
@@ -404,6 +447,8 @@ AIMoveChoiceModification4:
 
 	ld de, wEnemyMonMoves
 	ld hl, CalculateScore
+	set_input_buffer (wPrinterTileBuffer + OPP_TURNS)
+	set_output_buffer (wBuffer)
 	call ForEachMoveInDECallHL
 ;-----------------------------
 ; Restore hWhoseTurn
@@ -413,14 +458,8 @@ AIMoveChoiceModification4:
 	ret
 
 CalculateScore:
-	push hl
-	ld hl, wPrinterTileBuffer + 103
-	add hl, bc
-	ld a, [hl]
-	ld hl, wBuffer
-	add hl, bc
-	ld [hl], a
-	pop hl
+	read_from_input_buffer_b bc, a
+	write_to_output_buffer_b bc, a
 	ret
 
 ForEachMoveInDECallHL:
@@ -435,6 +474,12 @@ ForEachMoveInDECallHL:
 	and a
 	ret z ; no more moves in move set
 	call ReadMove
+; if player turn, swap enemy & player structs
+	ldh a, [hWhoseTurn]
+	and a
+	jr nz, .common
+	call SwapPlayerEnemyMoveStruct
+.common
 	inc de
 	call StoreRegisters
 	ld hl, .retPoint
@@ -442,6 +487,12 @@ ForEachMoveInDECallHL:
 	call LoadRegisters
 	jp hl
 .retPoint
+; if player turn, restore enemy & player structs
+	ldh a, [hWhoseTurn]
+	and a
+	jr nz, .common2
+	call SwapPlayerEnemyMoveStruct
+.common2
 	jp .next
 
 
@@ -450,17 +501,21 @@ BaseDamageCalcs:
 	and a
 	jr z, .player
 	callfar2 SwapPlayerAndEnemyLevels
-.player
 	callfar2 GetDamageVarsForEnemyAttack
-	ldh a, [hWhoseTurn]
-	and a
-	jr z, .player2
 	callfar2 SwapPlayerAndEnemyLevels
-.player2
+	jr .common
+.player
+	callfar2 GetDamageVarsForPlayerAttack
+	call DebugFunc
+.common
 	callfar2 CalculateDamage
 	callfar AdjustDamageForMoveType
 	call LoadRegisters
 	call WDamageWeightFactor
+	ret
+
+DebugFunc:
+	ld a, 1
 	ret
 
 
@@ -475,9 +530,6 @@ BaseDamageCalcs:
 CalculateDamageAI:
 	call StoreRegisters
 ;-----------------------------
-; Base dmg calculation
-	ld a, c
-	ld [wEnemySelectedMove], a
 ; Base dmg - no crit
 	ld a, 0
 	ld [wCriticalHitOrOHKO], a
@@ -526,7 +578,14 @@ CalculateDamageAI:
 	call Divide
 ;-----------------------------
 ; Correct for move accuracy wEnemyMoveAccuracy
+	ldh a, [hWhoseTurn]
+	and a
+	jr z, .player
 	ld a, [wEnemyMoveAccuracy]
+	jr .common
+.player
+	ld a, [wPlayerMoveAccuracy]
+.common
 	ldh [hMultiplier], a
 	call Multiply
 	ld a, 255
@@ -563,7 +622,14 @@ CalculateDamageAI:
 ;--------------------------------------------------
 WDamageWeightFactor:
 ; Account for crit rate
+	ldh a, [hWhoseTurn]
+	and a
+	jr z, .player
 	ld a, [wEnemyMonSpecies]
+	jr .common
+.player
+	ld a, [wBattleMonSpecies]
+.common
 	ld [wd0b5], a
 	callfar GetMonHeader
 ; Move from wDamage to hMultiplicand
@@ -590,7 +656,14 @@ WDamageWeightFactor:
 	ldh [hMultiplier], a
 	call Multiply
 ; divide by 512 (or by 64 if it's a high crit move)
+	ldh a, [hWhoseTurn]
+	and a
+	jr z, .player2
 	ld a, [wEnemyMoveNum]
+	jr .common2
+.player2
+	ld a, [wPlayerMoveNum]
+.common2
 	cp KARATE_CHOP
 	jr z, .highCrit
 	cp RAZOR_LEAF
@@ -692,10 +765,20 @@ CalculateRemainingRoundsAI:
 ; Note: This works because the quotient fits in a single byte (h)
 ;	  	when DMG > 255 (max HP is <= 2 ** 16 - 1, practically less than 1000)
 ; Load HP -> de, DMG -> bc, quotient in h
+	ldh a, [hWhoseTurn]
+	and a
+	jr z, .player
 	ld a, [wBattleMonHP]
 	ld d, a
 	ld a, [wBattleMonHP + 1]
 	ld e, a
+	jr .common
+.player
+	ld a, [wEnemyMonHP]
+	ld d, a
+	ld a, [wEnemyMonHP + 1]
+	ld e, a
+.common
 	ld a, [wDamage]
 	ld b, a
 	ld a, [wDamage + 1]
@@ -775,6 +858,31 @@ LoadRegisters:
 	ld a, [wBuffer + 28]
 	ld b, a
 	ld a, [wBuffer + 29]
+	ret
+
+SwapPlayerEnemyMoveStruct:
+	push hl
+	push de
+	push bc
+; Copy enemy struct to temp array
+	ld hl, wEnemyMoveNum
+	ld de, wPrinterTileBuffer + MOVE_SWAP
+	ld bc, MOVE_LENGTH
+	call CopyData
+; Copy from player to enemy struct
+	ld hl, wPlayerMoveNum
+	ld de, wEnemyMoveNum
+	ld bc, MOVE_LENGTH
+	call CopyData
+; Copy from temp to player struct
+	ld hl, wPrinterTileBuffer + MOVE_SWAP
+	ld de, wPlayerMoveNum
+	ld bc, MOVE_LENGTH
+	call CopyData
+; Pop ret
+	pop bc
+	pop de
+	pop hl
 	ret
 
 ReadMove:
